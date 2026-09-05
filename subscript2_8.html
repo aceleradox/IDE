@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubScript IDE (.sub15) - v2.8 Backend Connect</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Fira Code & Inter) -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+            tab-size: 2;
+            -moz-tab-size: 2;
+        }
+        
+        /* TOKENS DE SINTAXE SUBSCRIPT 2.8 */
+        .token-keyword { color: #f472b6 !important; font-weight: normal !important; font-style: normal !important; }  /* Rosa / Keywords & Tags */
+        .token-string { color: #a3e635 !important; font-weight: normal !important; font-style: normal !important; }   /* Verde / Textos & Aspas */
+        .token-variable { color: #38bdf8 !important; font-weight: normal !important; font-style: normal !important; } /* Azul / Variáveis $var */
+        .token-css-prop { color: #fbbf24 !important; font-weight: normal !important; font-style: normal !important; } /* Amarelo / Propriedades CSS & Chaves */
+        .token-css-val { color: #c084fc !important; font-weight: normal !important; font-style: normal !important; }  /* Roxo / Valores CSS, Números & Cores */
+        .token-func { color: #fb7185 !important; font-weight: normal !important; font-style: normal !important; }   /* Coral / Funções e Console */
+        .token-comment { color: #6b7280 !important; font-weight: normal !important; font-style: italic !important; }/* Cinza / Comentários */
+        .token-bracket { color: #94a3b8 !important; font-weight: normal !important; font-style: normal !important; }  /* Símbolos e Chaves */
+        .token-operator { color: #f97316 !important; font-weight: normal !important; font-style: normal !important; } /* Laranja / Operadores + e = */
+        .token-attr { color: #2dd4bf !important; font-weight: normal !important; font-style: normal !important; }     /* Turquesa / Atributos HTML */
+        .token-dot-style { color: #e879f9 !important; font-weight: bold !important; }                                  /* Lilás / .style */
+        .token-ninfa { color: #ec4899 !important; font-weight: bold !important; }                                      /* Magenta / ninfacode & connect */
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* ALINHAMENTO E SINCRONIZAÇÃO RIGOROSA DO EDITOR */
+        #lineNumbers {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 14px !important;
+            line-height: 22px !important;
+            padding-top: 12px !important;
+            padding-bottom: 12px !important;
+            padding-left: 8px !important;
+            padding-right: 12px !important;
+            user-select: none;
+            box-sizing: border-box !important;
+        }
+
+        #highlighting, #editing {
+            margin: 0 !important;
+            padding: 12px !important;
+            border: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            font-family: 'Fira Code', monospace !important;
+            font-size: 14px !important;
+            line-height: 22px !important;
+            letter-spacing: 0px !important;
+            word-spacing: 0px !important;
+            box-sizing: border-box !important;
+            white-space: pre !important;
+            word-wrap: normal !important;
+            overflow-wrap: normal !important;
+            tab-size: 2 !important;
+            -moz-tab-size: 2 !important;
+            font-variant-ligatures: none !important;
+            font-feature-settings: "liga" 0 !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+        }
+
+        #editing {
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+            background: transparent !important;
+            caret-color: #ec4899 !important;
+            z-index: 2;
+            resize: none !important;
+            outline: none !important;
+        }
+
+        #editing::selection {
+            background: rgba(236, 72, 153, 0.35) !important;
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+        }
+
+        #highlighting {
+            color: #f8fafc !important;
+            z-index: 1;
+            overflow: hidden !important;
+            pointer-events: none !important;
+        }
+
+        #highlighting code {
+            font-family: inherit !important;
+            font-size: inherit !important;
+            line-height: inherit !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-950 border-b border-slate-800 px-4 py-2 flex items-center justify-between select-none">
+        <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 px-3 py-1 rounded-lg text-white font-bold text-sm tracking-wide shadow-lg">
+                <i class="fa-solid font-mono text-lg">&lt;/&gt;</i>
+                <span>SubScript IDE</span>
+                <span class="text-[10px] bg-black/30 px-1.5 py-0.5 rounded text-purple-200">v2.8</span>
+            </div>
+            <span id="currentFileName" class="text-xs text-slate-400 bg-slate-800/60 border border-slate-700/50 px-2.5 py-1 rounded-md flex items-center gap-1.5">
+                <i class="fa-regular fa-file-code text-purple-400"></i>
+                <span id="fileNameText">meu_projeto.sub15</span>
+            </span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center space-x-2">
+            <input type="file" id="fileInput" accept=".sub15" class="hidden" onchange="handleFileOpen(event)">
+            
+            <button onclick="document.getElementById('fileInput').click()" title="Abrir Ficheiro (.sub15)" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-folder-open text-amber-400"></i> Abrir
+            </button>
+
+            <button onclick="saveFile()" title="Salvar (.sub15)" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-floppy-disk text-blue-400"></i> Salvar
+            </button>
+
+            <button onclick="saveFileAs()" title="Salvar Como..." class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-export text-indigo-400"></i> Salvar Como
+            </button>
+
+            <div class="h-4 w-[1px] bg-slate-800 mx-1"></div>
+
+            <button onclick="exportToHTML()" title="Exportar para HTML" class="px-3 py-1.5 text-xs font-medium bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg transition shadow-md flex items-center gap-1.5">
+                <i class="fa-brands fa-html5 text-amber-300"></i> Exportar HTML
+            </button>
+            
+            <button onclick="compileAndRender()" title="Executar e Renderizar" class="px-3 py-1.5 text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition shadow-md shadow-purple-900/30 flex items-center gap-1.5">
+                <i class="fa-solid fa-play text-emerald-300"></i> Executar
+            </button>
+        </div>
+    </header>
+
+    <!-- Quick Snippets Bar -->
+    <div class="bg-slate-900/90 border-b border-slate-800 px-4 py-1 flex items-center gap-2 overflow-x-auto text-xs text-slate-400 select-none">
+        <span class="text-[11px] text-slate-500 font-medium mr-1"><i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Snippets 2.8:</span>
+        <button onclick="insertSnippet('ninfaBlock')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-pink-300 border border-slate-700/60 transition">+ ninfacode { ... }</button>
+        <button onclick="insertSnippet('ninfaConnect')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-cyan-300 border border-slate-700/60 transition">+ ninfa.connect</button>
+        <button onclick="insertSnippet('head')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-purple-300 border border-slate-700/60 transition">+ head</button>
+        <button onclick="insertSnippet('style')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-amber-300 border border-slate-700/60 transition">+ style global</button>
+        <button onclick="insertSnippet('dotStyle')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-emerald-300 border border-slate-700/60 transition">+ .style { ... }</button>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <!-- Left Panel: Code Editor -->
+        <div class="w-1/2 border-r border-slate-800 flex flex-col bg-slate-950 relative">
+            
+            <!-- SubScript Editor Toolbar -->
+            <div class="bg-slate-900/80 px-3 py-1 text-xs text-slate-400 border-b border-slate-800/80 flex justify-between items-center">
+                <span class="flex items-center gap-1.5 font-medium text-slate-300">
+                    <i class="fa-solid fa-code text-purple-400"></i> Código SubScript 2.8
+                </span>
+                <div class="flex items-center gap-3">
+                    <span id="editorStats" class="text-[10px] text-slate-500 font-mono">Linha: 1 | Coluna: 1</span>
+                    <button onclick="clearEditor()" class="text-[11px] text-slate-400 hover:text-rose-400 transition" title="Limpar Código"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
+
+            <!-- Editor Container -->
+            <div class="relative flex-1 flex overflow-hidden code-font" id="editorContainer">
+                
+                <!-- Line Numbers Column -->
+                <div id="lineNumbers" class="bg-slate-950 text-slate-600 text-right select-none border-r border-slate-800/60 min-w-[48px] overflow-hidden">1</div>
+
+                <!-- Textarea + Highlight Wrapper -->
+                <div class="relative flex-1 h-full overflow-hidden">
+                    <pre id="highlighting" class="absolute top-0 left-0 pointer-events-none bg-transparent overflow-hidden" aria-hidden="true"><code id="highlighting-content"></code></pre>
+                    <textarea id="editing" spellcheck="false" class="absolute top-0 left-0 resize-none outline-none overflow-auto" oninput="updateEditor()" onkeydown="handleKeyDown(event)" onclick="updateCursorStats()" onkeyup="updateCursorStats()"></textarea>
+                </div>
+
+                <!-- Suggestions Dropdown -->
+                <div id="suggestionsBox" class="hidden absolute z-50 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl max-h-60 w-80 overflow-y-auto text-xs code-font divide-y divide-slate-700/50"></div>
+            </div>
+        </div>
+
+        <!-- Right Panel: HTML Live Preview -->
+        <div class="w-1/2 flex flex-col bg-slate-900 relative">
+            <div class="bg-slate-900/80 px-3 py-1 text-xs text-slate-400 border-b border-slate-800/80 flex justify-between items-center">
+                <span class="flex items-center gap-1.5 font-medium text-slate-300">
+                    <i class="fa-solid fa-eye text-emerald-400"></i> Renderização em Tempo Real (SubScript 2.8)
+                </span>
+                <div class="flex items-center gap-3">
+                    <span id="statusIndicator" class="text-[11px] text-emerald-400 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Compilado
+                    </span>
+                </div>
+            </div>
+
+            <!-- Preview Frame -->
+            <div class="flex-1 bg-white relative">
+                <iframe id="previewFrame" class="w-full h-full border-none bg-white"></iframe>
+            </div>
+
+            <!-- Console Log Overlay Panel -->
+            <div class="h-36 bg-slate-950 border-t border-slate-800 flex flex-col">
+                <div class="bg-slate-900 px-3 py-1 text-[11px] text-slate-400 border-b border-slate-800 flex justify-between items-center">
+                    <span class="font-semibold text-slate-300"><i class="fa-solid fa-terminal text-amber-400"></i> Console SubScript / Conexões Backend</span>
+                    <button onclick="clearConsole()" class="text-slate-500 hover:text-slate-300 text-[10px]">Limpar Console</button>
+                </div>
+                <div id="consoleOutput" class="p-2.5 code-font text-xs text-slate-300 overflow-y-auto flex-1 space-y-1">
+                    <div class="text-slate-500 italic">// Saídas do console.log(), cURL/CORS e ninfa.connect...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        const initialCode = `head = {
+  title = "Painel SubScript 2.8 Backend Connect"
+  meta = "charset=UTF-8"
+}
+
+// 1. Estilos CSS3 Globais
+style {
+  body {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+    color: #f8fafc;
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+}
+
+// 2. Variáveis de Endereços Backend / API
+var backendUrl = "https://jsonplaceholder.typicode.com/posts/1"
+
+h1 = "SubScript 2.8 - Backend Connect Engine".style {
+  margin: 20px auto;
+  text-align: center;
+  color: #c084fc;
+  font-size: 26px;
+  text-shadow: 0 2px 10px rgba(192, 132, 252, 0.4);
+}
+
+div [class="card"].style {
+  background-color: rgba(30, 41, 59, 0.85);
+  border: 1px solid #475569;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 480px;
+  margin: 20px auto;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+} {
+  p = "Conexão direta a servidores Backend com suporte CORS & cURL:".style {
+    color: #cbd5e1;
+    font-size: 14px;
+  }
+
+  button = "Conectar ao Backend (ninfa.connect)".style {
+    background: linear-gradient(90deg, #8b5cf6, #d946ef);
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    width: 100%;
+    margin-top: 10px;
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+    onClick.ninfa: conectarBackend()
+  }
+
+  div [id="statusPainel"].style {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #0f172a;
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 12px;
+    color: #38bdf8;
+    border: 1px solid #334155;
+    min-height: 50px;
+  }
+}
+
+// 3. Bloco ninfacode para requisições e conexões ao Backend
+ninfacode {
+  function conectarBackend() {
+    console.log("Iniciando conexão Backend Connect...");
+    document.getElementById("statusPainel").innerText = "Estabelecendo conexão...";
+
+    ninfa.connect(backendUrl, {
+      method: "GET",
+      corsProxy: true,
+      onConnect: function(response) {
+        console.log("Conectado ao Backend com sucesso!");
+        document.getElementById("statusPainel").innerText = "ID: " + response.id + "\\nTítulo: " + response.title;
+      },
+      onError: function(err) {
+        console.log("Erro de Conexão: " + err);
+        document.getElementById("statusPainel").innerText = "Erro ao conectar a backend";
+      }
+    });
+  }
+}`;
+
+        const autocompleteDictionary = [
+            { label: 'ninfacode { ... }', type: 'ninfa', snippet: 'ninfacode {\n  function conectar() {\n    ninfa.connect(backendUrl, {\n      corsProxy: true,\n      onConnect: function(res) { console.log(res); }\n    });\n  }\n}', desc: 'Bloco para Backend e HTTP' },
+            { label: 'ninfa.connect', type: 'ninfa', snippet: 'ninfa.connect(url, {\n  method: "GET",\n  corsProxy: true,\n  onConnect: function(res) { console.log(res); },\n  onError: function(err) { console.log(err); }\n});', desc: 'Conectar ao Backend com CORS/cURL' },
+            { label: 'onClick.ninfa', type: 'ninfa', snippet: 'onClick.ninfa: minhaFuncao()', desc: 'Evento com Conexão Ativada' },
+            { label: 'head', type: 'bloco', snippet: 'head = {\n  title = "Título"\n  meta = "charset=UTF-8"\n}', desc: 'Cabeçalho e Metadados' },
+            { label: 'style', type: 'bloco', snippet: 'style {\n  body {\n    background-color: #1e293b;\n    color: white;\n  }\n}', desc: 'Bloco de CSS Global' },
+            { label: '.style { ... }', type: 'css', snippet: '.style {\n  margin: 10px;\n  border: 1px solid #ccc;\n  padding: 15px;\n}', desc: 'Estilos Inline SubScript' },
+            { label: 'console.log', type: 'func', snippet: 'console.log("Mensagem: " + varName)', desc: 'Imprime mensagem no Console' },
+            { label: 'function', type: 'js', snippet: 'function minhaFuncao() {\n  alert("Executando!");\n}', desc: 'Função JavaScript Direta' }
+        ];
+
+        let currentFileName = "meu_app_subscript.sub15";
+        let selectedSuggestionIndex = 0;
+        let filteredSuggestions = [];
+
+        const editing = document.getElementById('editing');
+        const highlightingContent = document.getElementById('highlighting-content');
+        const highlighting = document.getElementById('highlighting');
+        const suggestionsBox = document.getElementById('suggestionsBox');
+        const consoleOutput = document.getElementById('consoleOutput');
+        const lineNumbers = document.getElementById('lineNumbers');
+
+        window.onload = () => {
+            editing.value = initialCode;
+            updateEditor();
+            compileAndRender();
+
+            editing.addEventListener('scroll', () => {
+                highlighting.scrollTop = editing.scrollTop;
+                highlighting.scrollLeft = editing.scrollLeft;
+                lineNumbers.scrollTop = editing.scrollTop;
+            });
+        };
+
+        function escapeHTML(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function updateLineNumbers() {
+            const lines = editing.value.split('\n').length;
+            let numbersHtml = '';
+            for (let i = 1; i <= lines; i++) {
+                numbersHtml += i + '<br>';
+            }
+            lineNumbers.innerHTML = numbersHtml;
+        }
+
+        function updateCursorStats() {
+            const text = editing.value;
+            const pos = editing.selectionStart;
+            const lines = text.substring(0, pos).split('\n');
+            const lineNum = lines.length;
+            const colNum = lines[lines.length - 1].length + 1;
+            document.getElementById('editorStats').innerText = `Linha: ${lineNum} | Coluna: ${colNum} | Total: ${text.length} chars`;
+        }
+
+        function updateEditor() {
+            const code = editing.value;
+            updateLineNumbers();
+            
+            const tokenRegex = new RegExp([
+                '(\\/\/[^\\n]*)',
+                '("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')',
+                '(\\$[a-zA-Z0-9_]+)',
+                '(\\b(?:var|let|const|function|return|if|else|for|while)\\b\\s+[a-zA-Z0-9_]+)',
+                '(\\bninfacode\\b|\\bninfa\\.code\\b|onClick\\.ninfa|\\bninfa\\.connect\\b|\\bninfa\\.fetch\\b)',
+                '(\\b(?:head|style|script|h1|h2|h3|h4|h5|h6|p|div|span|button|input|a|img|ul|li|ol|form|label|textarea|select|option|header|footer|nav|section|article|canvas|video|audio|table|tr|td|th)\\b)(?=\\s*[\\[=.{]|\\s*$)',
+                '(\\b\\[[^\\]]*\\])',
+                '(\\.style)',
+                '(\\b(?:console\\.log|alert)\\b)(?=\\s*[:\\(])',
+                '(\\b(?:onClick|onChange|onInput|onSubmit|onMouseOver|color|background-color|background|font-size|font-family|font-weight|text-align|margin|margin-top|margin-bottom|padding|border|border-radius|box-shadow|display|max-width|width|height|cursor|opacity|backdrop-filter|text-shadow)\\b)(?=\\s*[:=])',
+                '(\\+)',
+                '(#[0-9a-fA-F]{3,8}\\b|\\b\\d+(?:px|em|rem|%|s|ms|vh|vw)?\\b)',
+                '([{}()=:;,])'
+            ].join('|'), 'g');
+
+            let highlighted = '';
+            let lastIndex = 0;
+            let match;
+
+            while ((match = tokenRegex.exec(code)) !== null) {
+                if (match.index > lastIndex) {
+                    highlighted += escapeHTML(code.substring(lastIndex, match.index));
+                }
+
+                const [fullMatch, comment, str, variable, jsDecl, ninfaKw, tagKeyword, htmlAttrs, dotStyle, funcCall, propName, concatOp, cssVal, symbol] = match;
+
+                if (comment !== undefined) {
+                    highlighted += `<span class="token-comment">${escapeHTML(comment)}</span>`;
+                } else if (str !== undefined) {
+                    let escapedStr = escapeHTML(str);
+                    let innerInterpolated = escapedStr.replace(/(\$[a-zA-Z0-9_]+)/g, '<span class="token-variable">$1</span>');
+                    highlighted += `<span class="token-string">${innerInterpolated}</span>`;
+                } else if (variable !== undefined) {
+                    highlighted += `<span class="token-variable">${escapeHTML(variable)}</span>`;
+                } else if (jsDecl !== undefined) {
+                    const parts = jsDecl.split(/\s+/);
+                    highlighted += `<span class="token-keyword">${escapeHTML(parts[0])}</span> <span class="token-variable">${escapeHTML(parts.slice(1).join(' '))}</span>`;
+                } else if (ninfaKw !== undefined) {
+                    highlighted += `<span class="token-ninfa">${escapeHTML(ninfaKw)}</span>`;
+                } else if (tagKeyword !== undefined) {
+                    highlighted += `<span class="token-keyword">${escapeHTML(tagKeyword)}</span>`;
+                } else if (htmlAttrs !== undefined) {
+                    highlighted += `<span class="token-attr">${escapeHTML(htmlAttrs)}</span>`;
+                } else if (dotStyle !== undefined) {
+                    highlighted += `<span class="token-dot-style">${escapeHTML(dotStyle)}</span>`;
+                } else if (funcCall !== undefined) {
+                    highlighted += `<span class="token-func">${escapeHTML(funcCall)}</span>`;
+                } else if (propName !== undefined) {
+                    highlighted += `<span class="token-css-prop">${escapeHTML(propName)}</span>`;
+                } else if (concatOp !== undefined) {
+                    highlighted += `<span class="token-operator">${escapeHTML(concatOp)}</span>`;
+                } else if (cssVal !== undefined) {
+                    highlighted += `<span class="token-css-val">${escapeHTML(cssVal)}</span>`;
+                } else if (symbol !== undefined) {
+                    highlighted += `<span class="token-bracket">${escapeHTML(symbol)}</span>`;
+                } else {
+                    highlighted += escapeHTML(fullMatch);
+                }
+
+                lastIndex = tokenRegex.lastIndex;
+            }
+
+            if (lastIndex < code.length) {
+                highlighted += escapeHTML(code.substring(lastIndex));
+            }
+
+            highlightingContent.innerHTML = highlighted + "\n";
+            triggerAutocomplete();
+            updateCursorStats();
+        }
+
+        function triggerAutocomplete() {
+            const cursorPos = editing.selectionStart;
+            const textBeforeCursor = editing.value.substring(0, cursorPos);
+            const words = textBeforeCursor.split(/[\s\n=;{}()]+/);
+            const currentWord = words[words.length - 1].toLowerCase();
+
+            if (currentWord.length < 1) {
+                hideSuggestions();
+                return;
+            }
+
+            filteredSuggestions = autocompleteDictionary.filter(item => item.label.toLowerCase().includes(currentWord));
+            if (filteredSuggestions.length === 0) {
+                hideSuggestions();
+                return;
+            }
+            renderSuggestions();
+        }
+
+        function renderSuggestions() {
+            selectedSuggestionIndex = 0;
+            suggestionsBox.innerHTML = '';
+
+            filteredSuggestions.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `p-2 cursor-pointer flex items-center justify-between ${index === 0 ? 'bg-purple-900/50 text-white' : 'hover:bg-slate-700/50 text-slate-300'}`;
+                div.onclick = () => insertSuggestion(item);
+                
+                let badgeColor = 'bg-blue-500/20 text-blue-300';
+                if (item.type === 'ninfa') badgeColor = 'bg-pink-500/20 text-pink-300';
+                if (item.type === 'bloco') badgeColor = 'bg-purple-500/20 text-purple-300';
+                if (item.type === 'js') badgeColor = 'bg-amber-500/20 text-amber-300';
+                if (item.type === 'css') badgeColor = 'bg-fuchsia-500/20 text-fuchsia-300';
+
+                div.innerHTML = `
+                    <div>
+                        <div class="font-semibold">${item.label}</div>
+                        <div class="text-[10px] text-slate-400">${item.desc}</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${badgeColor}">${item.type}</span>
+                `;
+                suggestionsBox.appendChild(div);
+            });
+
+            suggestionsBox.style.top = '40px';
+            suggestionsBox.style.left = '40px';
+            suggestionsBox.classList.remove('hidden');
+        }
+
+        function hideSuggestions() {
+            suggestionsBox.classList.add('hidden');
+        }
+
+        function insertSuggestion(item) {
+            const cursorPos = editing.selectionStart;
+            const textBeforeCursor = editing.value.substring(0, cursorPos);
+            const textAfterCursor = editing.value.substring(cursorPos);
+            const words = textBeforeCursor.split(/[\s\n=;{}()]+/);
+            const lastWord = words[words.length - 1];
+            
+            const newTextBefore = textBeforeCursor.substring(0, textBeforeCursor.length - lastWord.length);
+            editing.value = newTextBefore + item.snippet + textAfterCursor;
+            
+            hideSuggestions();
+            updateEditor();
+            editing.focus();
+        }
+
+        function insertSnippet(type) {
+            let snippet = '';
+            if (type === 'ninfaBlock') snippet = '\nninfacode {\n  function conectar() {\n    ninfa.connect(backendUrl, {\n      corsProxy: true,\n      onConnect: function(data) { console.log(data); }\n    });\n  }\n}\n';
+            if (type === 'ninfaConnect') snippet = 'ninfa.connect(backendUrl, { corsProxy: true, onConnect: function(res) { console.log(res); } });';
+            if (type === 'head') snippet = '\nhead = {\n  title = "Meu App"\n  meta = "charset=UTF-8"\n}\n';
+            if (type === 'style') snippet = '\nstyle {\n  body {\n    background-color: #0f172a;\n    color: #f8fafc;\n  }\n}\n';
+            if (type === 'dotStyle') snippet = '.style {\n  margin: 10px;\n  border: 1px solid #ec4899;\n  padding: 15px;\n}';
+
+            const cursorPos = editing.selectionStart;
+            editing.value = editing.value.substring(0, cursorPos) + snippet + editing.value.substring(cursorPos);
+            updateEditor();
+            editing.focus();
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = editing.selectionStart;
+                const end = editing.selectionEnd;
+                editing.value = editing.value.substring(0, start) + "  " + editing.value.substring(end);
+                editing.selectionStart = editing.selectionEnd = start + 2;
+                updateEditor();
+            }
+
+            if (!suggestionsBox.classList.contains('hidden')) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedSuggestionIndex = (selectedSuggestionIndex + 1) % filteredSuggestions.length;
+                    highlightSuggestionOption();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedSuggestionIndex = (selectedSuggestionIndex - 1 + filteredSuggestions.length) % filteredSuggestions.length;
+                    highlightSuggestionOption();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (filteredSuggestions[selectedSuggestionIndex]) {
+                        insertSuggestion(filteredSuggestions[selectedSuggestionIndex]);
+                    }
+                } else if (e.key === 'Escape') {
+                    hideSuggestions();
+                }
+            }
+        }
+
+        function highlightSuggestionOption() {
+            Array.from(suggestionsBox.children).forEach((child, index) => {
+                if (index === selectedSuggestionIndex) {
+                    child.className = 'p-2 cursor-pointer flex items-center justify-between bg-purple-900/50 text-white';
+                } else {
+                    child.className = 'p-2 cursor-pointer flex items-center justify-between hover:bg-slate-700/50 text-slate-300';
+                }
+            });
+        }
+
+        function parseSubScriptToHTML(subscriptCode) {
+            let headContent = '';
+            let styleCSS = '';
+            let globalScripts = '';
+            let inlineDomJS = '';
+            let elementCounter = 0;
+
+            function convertExpression(expr) {
+                if (!expr) return '""';
+                return expr.replace(/\$([a-zA-Z0-9_]+)/g, '$1');
+            }
+
+            let code = subscriptCode;
+
+            // 1. Extrair bloco ninfacode
+            const ninfaRegex = /(?:ninfacode|ninfa\.code)\s*\{([\s\S]*?)\n\}/g;
+            let nMatch;
+            while ((nMatch = ninfaRegex.exec(code)) !== null) {
+                globalScripts += nMatch[1].trim() + '\n';
+            }
+            code = code.replace(ninfaRegex, '');
+
+            // 2. Extrair bloco style
+            const styleRegex = /style\s*\{([\s\S]*?)\n\}/;
+            const styleMatch = code.match(styleRegex);
+            if (styleMatch) {
+                styleCSS = styleMatch[1].trim();
+                code = code.replace(styleRegex, '');
+            }
+
+            // 3. Extrair bloco head
+            const headRegex = /head\s*=\s*\{([\s\S]*?)\}/;
+            const headMatch = code.match(headRegex);
+            if (headMatch) {
+                const headLines = headMatch[1].split('\n');
+                headLines.forEach(line => {
+                    const titleMatch = line.match(/title\s*=\s*(.*)/);
+                    if (titleMatch) headContent += `<title>${titleMatch[1].replace(/"/g, '')}</title>\n`;
+                    const metaMatch = line.match(/meta\s*=\s*(.*)/);
+                    if (metaMatch) headContent += `<meta ${metaMatch[1].replace(/"/g, '')}>\n`;
+                });
+                code = code.replace(headRegex, '');
+            }
+
+            // 4. Funções e variáveis globais
+            const funcRegex = /function\s+([a-zA-Z0-9_]+)\s*\(([^)]*)\)\s*\{([\s\S]*?)\n\}/g;
+            let fMatch;
+            while ((fMatch = funcRegex.exec(code)) !== null) {
+                globalScripts += fMatch[0] + '\n';
+            }
+            code = code.replace(funcRegex, '');
+
+            const varRegex = /(?:var|let|const)\s+([a-zA-Z0-9_]+)\s*=\s*(.*?)(?=\n|$);?/g;
+            let match;
+            while ((match = varRegex.exec(code)) !== null) {
+                const varName = match[1];
+                const varVal = match[2].trim();
+                globalScripts += `var ${varName} = ${varVal};\n`;
+            }
+            code = code.replace(varRegex, '');
+
+            const consoleLogRegex = /console\.log\((.*?)\);?/g;
+            while ((match = consoleLogRegex.exec(code)) !== null) {
+                let logArg = convertExpression(match[1].trim());
+                inlineDomJS += `console.log(${logArg});\n`;
+            }
+            code = code.replace(consoleLogRegex, '');
+
+            const alertRegex = /alert:\((.*?)\)/g;
+            while ((match = alertRegex.exec(code)) !== null) {
+                let alertArg = match[1].trim();
+                let jsArg = convertExpression(alertArg);
+                inlineDomJS += `setTimeout(() => { alert(${jsArg}); }, 200);\n`;
+            }
+            code = code.replace(alertRegex, '');
+
+            function parseSubScriptTree(inputCode) {
+                let htmlOutput = '';
+                let clean = inputCode.replace(/\/\/[^\n]*/g, '').trim();
+                if (!clean) return '';
+
+                const lines = clean.split('\n');
+                let i = 0;
+
+                while (i < lines.length) {
+                    let line = lines[i].trim();
+                    if (!line) { i++; continue; }
+
+                    const tagMatch = line.match(/^([a-zA-Z0-9]+)(?:\s*\[([^\]]*)\])?(?:\s*=\s*([^{\n]+?))?(?:\.style)?(?:\s*\{)?$/);
+
+                    if (tagMatch) {
+                        const tagName = tagMatch[1];
+                        const rawAttrs = tagMatch[2] ? tagMatch[2].trim() : '';
+                        let contentExpr = tagMatch[3] ? tagMatch[3].trim() : null;
+                        const hasBrace = line.endsWith('{');
+
+                        if (contentExpr && contentExpr.endsWith('.style')) {
+                            contentExpr = contentExpr.substring(0, contentExpr.length - 6).trim();
+                        }
+
+                        elementCounter++;
+                        let elemId = `sub_${tagName}_${elementCounter}`;
+
+                        let attrPairs = [];
+                        if (rawAttrs) {
+                            const attrRegex = /([a-zA-Z0-9_\-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s,]+))/g;
+                            let aMatch;
+                            while ((aMatch = attrRegex.exec(rawAttrs)) !== null) {
+                                const key = aMatch[1].trim();
+                                const val = (aMatch[3] !== undefined ? aMatch[3] : (aMatch[4] !== undefined ? aMatch[4] : aMatch[5])).trim();
+                                if (key.toLowerCase() === 'id') {
+                                    elemId = val;
+                                } else {
+                                    attrPairs.push(`${key}="${val}"`);
+                                }
+                            }
+                        }
+
+                        let cssStyles = [];
+                        let onClickJS = '';
+                        let innerBodyContent = '';
+
+                        if (hasBrace) {
+                            let braceDepth = 1;
+                            let blockLines = [];
+                            i++;
+                            while (i < lines.length && braceDepth > 0) {
+                                let curLine = lines[i];
+                                if (curLine.includes('{')) braceDepth++;
+                                if (curLine.includes('}')) braceDepth--;
+                                if (braceDepth > 0) blockLines.push(curLine);
+                                i++;
+                            }
+
+                            let isCssBlock = blockLines.every(l => {
+                                let trimmed = l.trim();
+                                return !trimmed || trimmed.includes(':') || trimmed.startsWith('//');
+                            });
+
+                            if (isCssBlock) {
+                                blockLines.forEach(l => {
+                                    const parts = l.split(':');
+                                    if (parts.length >= 2) {
+                                        const key = parts[0].trim();
+                                        const val = parts.slice(1).join(':').trim().replace(/;$/, '');
+                                        if (key === 'onClick.ninfa' || key === 'onClick') {
+                                            onClickJS = convertExpression(val);
+                                        } else {
+                                            cssStyles.push(`${key}: ${val};`);
+                                        }
+                                    }
+                                });
+
+                                if (i < lines.length && lines[i].trim().startsWith('{')) {
+                                    let innerDepth = 1;
+                                    let innerLines = [];
+                                    i++;
+                                    while (i < lines.length && innerDepth > 0) {
+                                        let curLine = lines[i];
+                                        if (curLine.includes('{')) innerDepth++;
+                                        if (curLine.includes('}')) innerDepth--;
+                                        if (innerDepth > 0) innerLines.push(curLine);
+                                        i++;
+                                    }
+                                    innerBodyContent = parseSubScriptTree(innerLines.join('\n'));
+                                }
+                            } else {
+                                innerBodyContent = parseSubScriptTree(blockLines.join('\n'));
+                            }
+                        } else {
+                            i++;
+                        }
+
+                        let attrString = ` id="${elemId}"` + (attrPairs.length > 0 ? ' ' + attrPairs.join(' ') : '');
+                        let styleAttr = cssStyles.length > 0 ? ` style="${cssStyles.join(' ')}"` : '';
+                        let onClickAttr = onClickJS ? ` onclick="${onClickJS.replace(/"/g, '&quot;')}"` : '';
+
+                        if (tagName === 'img') {
+                            htmlOutput += `<img${attrString}${styleAttr}${onClickAttr} />\n`;
+                            if (contentExpr) inlineDomJS += `if(document.getElementById("${elemId}")) document.getElementById("${elemId}").src = ${convertExpression(contentExpr)};\n`;
+                        } else if (tagName === 'input') {
+                            htmlOutput += `<input${attrString}${styleAttr}${onClickAttr} />\n`;
+                            if (contentExpr) inlineDomJS += `if(document.getElementById("${elemId}")) document.getElementById("${elemId}").value = ${convertExpression(contentExpr)};\n`;
+                        } else {
+                            htmlOutput += `<${tagName}${attrString}${styleAttr}${onClickAttr}>${innerBodyContent}</${tagName}>\n`;
+                            if (contentExpr) {
+                                inlineDomJS += `if(document.getElementById("${elemId}")) document.getElementById("${elemId}").innerText = ${convertExpression(contentExpr)};\n`;
+                            }
+                        }
+                    } else {
+                        i++;
+                    }
+                }
+
+                return htmlOutput;
+            }
+
+            const bodyHTML = parseSubScriptTree(code);
+
+            const compiledHTML = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    ${headContent}
+    ${styleCSS ? `<style>\n${styleCSS}\n</style>` : ''}
+    <script>
+        window.ninfa = {
+            connect: function(url, options) {
+                options = options || {};
+                var method = options.method || 'GET';
+                var targetUrl = url;
+
+                console.log("[Backend Connect] Conectando a: " + url);
+
+                if (options.corsProxy) {
+                    targetUrl = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+                }
+
+                fetch(targetUrl, {
+                    method: method,
+                    headers: options.headers || { 'Content-Type': 'application/json' },
+                    body: options.body ? (typeof options.body === 'string' ? options.body : JSON.stringify(options.body)) : null
+                })
+                .then(function(response) {
+                    if (!response.ok) throw new Error("Erro HTTP Status: " + response.status);
+                    var contentType = response.headers.get("content-type");
+                    return (contentType && contentType.indexOf("application/json") !== -1) ? response.json() : response.text();
+                })
+                .then(function(data) {
+                    console.log("[Backend Connect] Conexão bem-sucedida.");
+                    if (typeof options.onConnect === 'function') options.onConnect(data);
+                })
+                .catch(function(err) {
+                    console.log("[Backend Connect Error]: " + err.message);
+                    if (typeof options.onError === 'function') options.onError(err.message);
+                });
+            },
+            fetch: function(url, options) { return window.ninfa.connect(url, options); }
+        };
+
+        ${globalScripts}
+    <\/script>
+</head>
+<body>
+${bodyHTML}
+
+<script>
+    window.console.log = function(msg) {
+        window.parent.postMessage({ type: 'CONSOLE_LOG', message: String(msg) }, '*');
+    };
+    
+    window.onerror = function(msg, url, lineNo) {
+        window.parent.postMessage({ type: 'CONSOLE_ERROR', message: "Erro: " + msg + " (Linha: " + lineNo + ")" }, '*');
+        return false;
+    };
+
+    document.addEventListener("DOMContentLoaded", function() {
+        try {
+            ${inlineDomJS}
+        } catch(e) {
+            console.log("Erro ao carregar DOM: " + e.message);
+        }
+    });
+<\/script>
+</body>
+</html>`;
+
+            return compiledHTML;
+        }
+
+        function compileAndRender() {
+            const subscriptCode = editing.value;
+            const fullHTML = parseSubScriptToHTML(subscriptCode);
+            document.getElementById('previewFrame').srcdoc = fullHTML;
+            document.getElementById('statusIndicator').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Compilado`;
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data) {
+                if (event.data.type === 'CONSOLE_LOG') {
+                    logToConsole(event.data.message, 'log');
+                } else if (event.data.type === 'CONSOLE_ERROR') {
+                    logToConsole(event.data.message, 'error');
+                }
+            }
+        });
+
+        function logToConsole(message, type = 'log') {
+            const entry = document.createElement('div');
+            const time = new Date().toLocaleTimeString();
+            
+            if (type === 'error') {
+                entry.className = "text-rose-400 flex items-center gap-2 bg-rose-950/30 p-1 rounded border border-rose-900/40";
+                entry.innerHTML = `<span class="text-slate-500">[${time}]</span> <span><i class="fa-solid fa-triangle-exclamation"></i> ${message}</span>`;
+            } else {
+                entry.className = "text-pink-300 flex items-center gap-2";
+                entry.innerHTML = `<span class="text-slate-500">[${time}]</span> <span>${message}</span>`;
+            }
+            
+            consoleOutput.appendChild(entry);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = `<div class="text-slate-500 italic">// Saídas do console.log(), cURL/CORS e ninfa.connect...</div>`;
+        }
+
+        function clearEditor() {
+            if (confirm("Deseja realmente limpar todo o código?")) {
+                editing.value = "";
+                updateEditor();
+                compileAndRender();
+            }
+        }
+
+        function saveFile() { downloadFile(currentFileName, editing.value); }
+        function saveFileAs() {
+            const name = prompt("Digite o nome do arquivo:", currentFileName);
+            if (name) {
+                currentFileName = name.endsWith('.sub15') ? name : name + '.sub15';
+                document.getElementById('fileNameText').innerText = currentFileName;
+                saveFile();
+            }
+        }
+
+        function exportToHTML() {
+            downloadFile(currentFileName.replace('.sub15', '.html'), parseSubScriptToHTML(editing.value), 'text/html');
+        }
+
+        function downloadFile(filename, text, type = 'text/plain') {
+            const element = document.createElement('a');
+            element.href = URL.createObjectURL(new Blob([text], { type: type }));
+            element.download = filename;
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        function handleFileOpen(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            currentFileName = file.name;
+            document.getElementById('fileNameText').innerText = currentFileName;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                editing.value = e.target.result;
+                updateEditor();
+                compileAndRender();
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
