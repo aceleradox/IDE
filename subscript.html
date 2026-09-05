@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SubScript IDE (.sub15)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Fira Code) -->
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+            tab-size: 2;
+            -moz-tab-size: 2;
+        }
+        
+        /* CORES DOS TOKENS (Peso e estilo estritamente normais para evitar desalinhamento de caractere) */
+        .token-keyword { color: #f472b6 !important; font-weight: normal !important; font-style: normal !important; }  /* Rosa / Keywords & Tags */
+        .token-string { color: #a3e635 !important; font-weight: normal !important; font-style: normal !important; }   /* Verde / Textos & Aspas */
+        .token-variable { color: #38bdf8 !important; font-weight: normal !important; font-style: normal !important; } /* Azul / Variáveis $var */
+        .token-css-prop { color: #fbbf24 !important; font-weight: normal !important; font-style: normal !important; } /* Amarelo / Propriedades CSS & Chaves */
+        .token-css-val { color: #c084fc !important; font-weight: normal !important; font-style: normal !important; }  /* Roxo / Valores CSS, Números & Cores */
+        .token-func { color: #fb7185 !important; font-weight: normal !important; font-style: normal !important; }   /* Coral / Funções como alert */
+        .token-comment { color: #6b7280 !important; font-weight: normal !important; font-style: italic !important; }/* Cinza / Comentários */
+        .token-bracket { color: #94a3b8 !important; font-weight: normal !important; font-style: normal !important; }  /* Símbolos e Chaves */
+        .token-operator { color: #f97316 !important; font-weight: normal !important; font-style: normal !important; } /* Laranja / Operadores + */
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* ALINHAMENTO RIGOROSO DO EDITOR E REGRAS ANTI-DESALINHAMENTO */
+        #lineNumbers {
+            font-family: 'Fira Code', monospace !important;
+            font-size: 14px !important;
+            line-height: 22px !important;
+            padding-top: 12px !important;
+            padding-bottom: 12px !important;
+            padding-left: 8px !important;
+            padding-right: 12px !important;
+            user-select: none;
+            box-sizing: border-box !important;
+        }
+
+        #highlighting, #editing {
+            margin: 0 !important;
+            padding: 12px !important;
+            border: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            font-family: 'Fira Code', monospace !important;
+            font-size: 14px !important;
+            line-height: 22px !important;
+            letter-spacing: 0px !important;
+            word-spacing: 0px !important;
+            box-sizing: border-box !important;
+            white-space: pre !important;
+            word-wrap: normal !important;
+            overflow-wrap: normal !important;
+            tab-size: 2 !important;
+            -moz-tab-size: 2 !important;
+            font-variant-ligatures: none !important;
+            font-feature-settings: "liga" 0 !important;
+            -webkit-font-smoothing: antialiased !important;
+            -moz-osx-font-smoothing: grayscale !important;
+        }
+
+        /* Torna o texto do textarea 100% transparente, mantendo apenas o cursor piscante */
+        #editing {
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+            background: transparent !important;
+            caret-color: #c084fc !important; /* Cursor roxo brilhante perfeitamente posicionado */
+            z-index: 2;
+            resize: none !important;
+            outline: none !important;
+        }
+
+        #editing::selection {
+            background: rgba(168, 85, 247, 0.35) !important;
+            color: transparent !important;
+            -webkit-text-fill-color: transparent !important;
+        }
+
+        /* Camada de cores que fica exatamente por baixo */
+        #highlighting {
+            color: #f8fafc !important;
+            z-index: 1;
+            overflow: hidden !important;
+            pointer-events: none !important;
+        }
+
+        #highlighting code {
+            font-family: inherit !important;
+            font-size: inherit !important;
+            line-height: inherit !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 h-screen flex flex-col overflow-hidden">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-950 border-b border-slate-800 px-4 py-2 flex items-center justify-between select-none">
+        <div class="flex items-center space-x-3">
+            <div class="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 px-3 py-1 rounded-lg text-white font-bold text-sm tracking-wide shadow-lg">
+                <i class="fa-solid font-mono text-lg">&lt;/&gt;</i>
+                <span>SubScript IDE</span>
+                <span class="text-[10px] bg-black/30 px-1.5 py-0.5 rounded text-purple-200">v2.1</span>
+            </div>
+            <span id="currentFileName" class="text-xs text-slate-400 bg-slate-800/60 border border-slate-700/50 px-2.5 py-1 rounded-md flex items-center gap-1.5">
+                <i class="fa-regular fa-file-code text-purple-400"></i>
+                <span id="fileNameText">meu_projeto.sub15</span>
+            </span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center space-x-2">
+            <input type="file" id="fileInput" accept=".sub15" class="hidden" onchange="handleFileOpen(event)">
+            
+            <button onclick="document.getElementById('fileInput').click()" title="Abrir Arquivo (.sub15)" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-folder-open text-amber-400"></i> Abrir
+            </button>
+
+            <button onclick="saveFile()" title="Salvar (.sub15)" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-floppy-disk text-blue-400"></i> Salvar
+            </button>
+
+            <button onclick="saveFileAs()" title="Salvar Como..." class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-export text-indigo-400"></i> Salvar Como
+            </button>
+
+            <div class="h-4 w-[1px] bg-slate-800 mx-1"></div>
+
+            <button onclick="exportToHTML()" title="Exportar para HTML" class="px-3 py-1.5 text-xs font-medium bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg transition shadow-md flex items-center gap-1.5">
+                <i class="fa-brands fa-html5 text-amber-300"></i> Exportar HTML
+            </button>
+            
+            <button onclick="compileAndRender()" title="Executar e Renderizar" class="px-3 py-1.5 text-xs font-semibold bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition shadow-md shadow-purple-900/30 flex items-center gap-1.5">
+                <i class="fa-solid fa-play text-emerald-300"></i> Executar
+            </button>
+        </div>
+    </header>
+
+    <!-- Quick Snippets Bar -->
+    <div class="bg-slate-900/90 border-b border-slate-800 px-4 py-1 flex items-center gap-2 overflow-x-auto text-xs text-slate-400 select-none">
+        <span class="text-[11px] text-slate-500 font-medium mr-1"><i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Atalhos Rápidos:</span>
+        <button onclick="insertSnippet('h1')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-purple-300 border border-slate-700/60 transition">+ h1</button>
+        <button onclick="insertSnippet('p')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-purple-300 border border-slate-700/60 transition">+ p</button>
+        <button onclick="insertSnippet('div')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-purple-300 border border-slate-700/60 transition">+ div</button>
+        <button onclick="insertSnippet('button')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-purple-300 border border-slate-700/60 transition">+ button</button>
+        <button onclick="insertSnippet('input')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-purple-300 border border-slate-700/60 transition">+ input</button>
+        <button onclick="insertSnippet('concat')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-amber-300 border border-slate-700/60 transition">+ Concatenação</button>
+        <button onclick="insertSnippet('alert')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-rose-300 border border-slate-700/60 transition">+ alert:()</button>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="flex-1 flex overflow-hidden relative">
+        
+        <!-- Left Panel: Code Editor -->
+        <div class="w-1/2 border-r border-slate-800 flex flex-col bg-slate-950 relative">
+            
+            <!-- SubScript Editor Toolbar -->
+            <div class="bg-slate-900/80 px-3 py-1 text-xs text-slate-400 border-b border-slate-800/80 flex justify-between items-center">
+                <span class="flex items-center gap-1.5 font-medium text-slate-300">
+                    <i class="fa-solid fa-code text-purple-400"></i> Código SubScript
+                </span>
+                <div class="flex items-center gap-3">
+                    <span id="editorStats" class="text-[10px] text-slate-500 font-mono">Linha: 1 | Coluna: 1</span>
+                    <button onclick="clearEditor()" class="text-[11px] text-slate-400 hover:text-rose-400 transition" title="Limpar Código"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+            </div>
+
+            <!-- Editor Container with Line Numbers & Overlaid Syntax Highlighting -->
+            <div class="relative flex-1 flex overflow-hidden code-font" id="editorContainer">
+                
+                <!-- Line Numbers Column -->
+                <div id="lineNumbers" class="bg-slate-950 text-slate-600 text-right select-none border-r border-slate-800/60 min-w-[48px] overflow-hidden">1</div>
+
+                <!-- Textarea + Highlight Wrapper -->
+                <div class="relative flex-1 h-full overflow-hidden">
+                    <!-- Highlight Overlay Layer -->
+                    <pre id="highlighting" class="absolute top-0 left-0 pointer-events-none bg-transparent overflow-hidden" aria-hidden="true"><code id="highlighting-content"></code></pre>
+                    
+                    <!-- Editable Textarea -->
+                    <textarea id="editing" spellcheck="false" class="absolute top-0 left-0 resize-none outline-none overflow-auto" oninput="updateEditor()" onkeydown="handleKeyDown(event)" onclick="updateCursorStats()" onkeyup="updateCursorStats()"></textarea>
+                </div>
+
+                <!-- Suggestions / Auto-complete Dropdown -->
+                <div id="suggestionsBox" class="hidden absolute z-50 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl max-h-60 w-80 overflow-y-auto text-xs code-font divide-y divide-slate-700/50">
+                    <!-- Suggestions rendered dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: HTML Live Preview -->
+        <div class="w-1/2 flex flex-col bg-slate-900 relative">
+            <div class="bg-slate-900/80 px-3 py-1 text-xs text-slate-400 border-b border-slate-800/80 flex justify-between items-center">
+                <span class="flex items-center gap-1.5 font-medium text-slate-300">
+                    <i class="fa-solid fa-eye text-emerald-400"></i> Visualização em Tempo Real (HTML/JS)
+                </span>
+                <div class="flex items-center gap-3">
+                    <span id="statusIndicator" class="text-[11px] text-emerald-400 flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Atualizado
+                    </span>
+                </div>
+            </div>
+
+            <!-- Preview Frame -->
+            <div class="flex-1 bg-white relative">
+                <iframe id="previewFrame" class="w-full h-full border-none bg-white"></iframe>
+            </div>
+
+            <!-- Console Log Overlay Panel -->
+            <div class="h-32 bg-slate-950 border-t border-slate-800 flex flex-col">
+                <div class="bg-slate-900 px-3 py-1 text-[11px] text-slate-400 border-b border-slate-800 flex justify-between items-center">
+                    <span class="font-semibold text-slate-300"><i class="fa-solid fa-terminal text-amber-400"></i> Console SubScript / Alerts</span>
+                    <button onclick="clearConsole()" class="text-slate-500 hover:text-slate-300 text-[10px]">Limpar Console</button>
+                </div>
+                <div id="consoleOutput" class="p-2.5 code-font text-xs text-slate-300 overflow-y-auto flex-1 space-y-1">
+                    <div class="text-slate-500 italic">// Saídas de alertas e erros de execução aparecerão aqui...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Default SubScript template code
+        const initialCode = `head = {
+  title = "Aplicações com SubScript"
+  meta = "charset=UTF-8"
+}
+
+// Declarando variáveis JavaScript
+var nome = "Maria Silva"
+var idade = 22
+var cidade = "São Paulo"
+
+// Concatenação de Strings com o operador +
+h1 = "Bem-vindo(a), " + $nome + "!" {
+  color: #8b5cf6;
+  text-align: center;
+  font-family: sans-serif;
+  margin-top: 20px;
+}
+
+p = "Perfil do Usuário: " + $nome + " tem " + $idade + " anos e mora em " + $cidade {
+  color: #475569;
+  text-align: center;
+  font-size: 15px;
+}
+
+div = "Sintaxe limpa com suporte a Concatenação (+), Eventos e Estilos!" {
+  background-color: #f8fafc;
+  border: 2px dashed #cbd5e1;
+  padding: 16px;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 450px;
+  color: #334155;
+  text-align: center;
+}
+
+button = "Saudação Personalizada" {
+  background-color: #10b981;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: block;
+  margin: 0 auto;
+  font-weight: bold;
+  onClick: alert("Olá " + $nome + " de " + $cidade + "!")
+}
+
+// Teste de alert automático na inicialização
+alert:("Carregado o perfil de " + $nome)`;
+
+        // Dictionary of SubScript tags and code snippets for autocomplete
+        const autocompleteDictionary = [
+            { label: 'head', type: 'bloco', snippet: 'head = {\n  title = "Título da Página"\n}', desc: 'Configuração do cabeçalho HTML' },
+            { label: 'h1', type: 'tag', snippet: 'h1 = "Título Principal" {\n  color: #8b5cf6;\n}', desc: 'Cabeçalho H1' },
+            { label: 'h2', type: 'tag', snippet: 'h2 = "Subtítulo" {\n  color: #64748b;\n}', desc: 'Subtítulo H2' },
+            { label: 'p', type: 'tag', snippet: 'p = "Texto " + $var {\n  font-size: 14px;\n}', desc: 'Parágrafo com concatenação' },
+            { label: 'div', type: 'tag', snippet: 'div = "Container" {\n  padding: 15px;\n  background-color: #f1f5f9;\n}', desc: 'Bloco Container Div' },
+            { label: 'button', type: 'tag', snippet: 'button = "Clique Aqui" {\n  background-color: #10b981;\n  color: white;\n  onClick: alert("Clicou!")\n}', desc: 'Botão com evento onClick' },
+            { label: 'input', type: 'tag', snippet: 'input = "Digite seu nome..." {\n  border: 1px solid #ccc;\n  padding: 8px;\n}', desc: 'Campo Input' },
+            { label: 'span', type: 'tag', snippet: 'span = "Texto destacado" {\n  font-weight: bold;\n}', desc: 'Elemento inline Span' },
+            { label: 'a', type: 'tag', snippet: 'a = "Visite nosso site" {\n  color: #2563eb;\n}', desc: 'Hiperlink' },
+            { label: 'img', type: 'tag', snippet: 'img = "https://via.placeholder.com/150" {\n  width: 150px;\n}', desc: 'Imagem' },
+            { label: 'var', type: 'js', snippet: 'var nomeVariavel = "valor"', desc: 'Declaração de variável JS' },
+            { label: 'concat (+)', type: 'func', snippet: '"Texto " + $variavel + " complemento"', desc: 'Unir textos e variáveis' },
+            { label: 'alert:(...)', type: 'func', snippet: 'alert:("Mensagem " + $nome)', desc: 'Exibe caixa de diálogo alert' },
+            { label: 'onClick', type: 'evento', snippet: 'onClick: alert("Mensagem")', desc: 'Evento de clique no elemento' },
+            { label: 'color', type: 'css', snippet: 'color: #333;', desc: 'Cor do texto' },
+            { label: 'background-color', type: 'css', snippet: 'background-color: #f0f0f0;', desc: 'Cor de fundo' },
+            { label: 'font-size', type: 'css', snippet: 'font-size: 16px;', desc: 'Tamanho da fonte' },
+            { label: 'margin', type: 'css', snippet: 'margin: 10px;', desc: 'Margem externa' },
+            { label: 'padding', type: 'css', snippet: 'padding: 10px;', desc: 'Espaçamento interno' }
+        ];
+
+        let currentFileName = "meu_projeto.sub15";
+        let selectedSuggestionIndex = 0;
+        let filteredSuggestions = [];
+
+        // DOM elements
+        const editing = document.getElementById('editing');
+        const highlightingContent = document.getElementById('highlighting-content');
+        const highlighting = document.getElementById('highlighting');
+        const suggestionsBox = document.getElementById('suggestionsBox');
+        const consoleOutput = document.getElementById('consoleOutput');
+        const lineNumbers = document.getElementById('lineNumbers');
+
+        // Initialization
+        window.onload = () => {
+            editing.value = initialCode;
+            updateEditor();
+            compileAndRender();
+
+            // Sincroniza vertical e horizontalmente sem desvios
+            editing.addEventListener('scroll', () => {
+                highlighting.scrollTop = editing.scrollTop;
+                highlighting.scrollLeft = editing.scrollLeft;
+                lineNumbers.scrollTop = editing.scrollTop;
+            });
+        };
+
+        function escapeHTML(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+
+        // Atualiza a coluna de números de linhas
+        function updateLineNumbers() {
+            const lines = editing.value.split('\n').length;
+            let numbersHtml = '';
+            for (let i = 1; i <= lines; i++) {
+                numbersHtml += i + '<br>';
+            }
+            lineNumbers.innerHTML = numbersHtml;
+        }
+
+        function updateCursorStats() {
+            const text = editing.value;
+            const pos = editing.selectionStart;
+            const lines = text.substring(0, pos).split('\n');
+            const lineNum = lines.length;
+            const colNum = lines[lines.length - 1].length + 1;
+            document.getElementById('editorStats').innerText = `Linha: ${lineNum} | Coluna: ${colNum} | Total: ${text.length} chars`;
+        }
+
+        // --- SYNTAX HIGHLIGHTING LEXER ENGINE ---
+        function updateEditor() {
+            const code = editing.value;
+            updateLineNumbers();
+            
+            // Lexer regex para analisar tokens de forma atômica
+            const tokenRegex = new RegExp([
+                '(\\/\/[^\\n]*)',                                                              // 1. Comentários
+                '("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')',                             // 2. Strings com aspas
+                '(\\$[a-zA-Z0-9_]+)',                                                          // 3. Variáveis $var
+                '(\\b(?:var|let|const)\\b\\s+[a-zA-Z0-9_]+)',                                  // 4. Declaração JS
+                '(\\b(?:head|h1|h2|h3|h4|h5|h6|p|div|span|button|input|a|img|ul|li|ol|form|label|textarea|select|option|header|footer|nav|section|article|iframe|canvas|video|audio)\\b)(?=\\s*=)', // 5. Tags/Blocos SubScript
+                '(\\balert\\b)(?=\\s*:\\s*\\()',                                                // 6. Função alert:(...)
+                '(\\b(?:onClick|onInput|onChange|onHover|color|background-color|font-size|font-family|font-weight|text-align|margin|margin-top|margin-bottom|padding|border|border-radius|box-shadow|display|max-width|width|height|cursor|opacity)\\b)(?=\\s*[:=])', // 7. Propriedades e Eventos
+                '(\\+)',                                                                       // 8. Operador de Concatenação +
+                '(#[0-9a-fA-F]{3,8}\\b|\\b\\d+(?:px|em|rem|%|s|ms)?\\b|\\b(?:center|sans-serif|serif|monospace|block|inline|flex|grid|none|bold|italic|pointer|relative|absolute|fixed|auto|cover|contain|solid|dashed|dotted|white|black|transparent)\\b)', // 9. Valores CSS
+                '([{}()=:;,])'                                                                 // 10. Símbolos e Pontuação
+            ].join('|'), 'g');
+
+            let highlighted = '';
+            let lastIndex = 0;
+            let match;
+
+            while ((match = tokenRegex.exec(code)) !== null) {
+                if (match.index > lastIndex) {
+                    highlighted += escapeHTML(code.substring(lastIndex, match.index));
+                }
+
+                const [
+                    fullMatch,
+                    comment,
+                    str,
+                    variable,
+                    jsDecl,
+                    tagKeyword,
+                    funcCall,
+                    propName,
+                    concatOp,
+                    cssVal,
+                    symbol
+                ] = match;
+
+                if (comment !== undefined) {
+                    highlighted += `<span class="token-comment">${escapeHTML(comment)}</span>`;
+                } else if (str !== undefined) {
+                    let escapedStr = escapeHTML(str);
+                    let innerInterpolated = escapedStr.replace(/(\$[a-zA-Z0-9_]+)/g, '<span class="token-variable">$1</span>');
+                    highlighted += `<span class="token-string">${innerInterpolated}</span>`;
+                } else if (variable !== undefined) {
+                    highlighted += `<span class="token-variable">${escapeHTML(variable)}</span>`;
+                } else if (jsDecl !== undefined) {
+                    const parts = jsDecl.split(/\s+/);
+                    const keyword = parts[0];
+                    const varName = parts.slice(1).join(' ');
+                    highlighted += `<span class="token-keyword">${escapeHTML(keyword)}</span> <span class="token-variable">${escapeHTML(varName)}</span>`;
+                } else if (tagKeyword !== undefined) {
+                    highlighted += `<span class="token-keyword">${escapeHTML(tagKeyword)}</span>`;
+                } else if (funcCall !== undefined) {
+                    highlighted += `<span class="token-func">${escapeHTML(funcCall)}</span>`;
+                } else if (propName !== undefined) {
+                    highlighted += `<span class="token-css-prop">${escapeHTML(propName)}</span>`;
+                } else if (concatOp !== undefined) {
+                    highlighted += `<span class="token-operator">${escapeHTML(concatOp)}</span>`;
+                } else if (cssVal !== undefined) {
+                    highlighted += `<span class="token-css-val">${escapeHTML(cssVal)}</span>`;
+                } else if (symbol !== undefined) {
+                    highlighted += `<span class="token-bracket">${escapeHTML(symbol)}</span>`;
+                } else {
+                    highlighted += escapeHTML(fullMatch);
+                }
+
+                lastIndex = tokenRegex.lastIndex;
+            }
+
+            if (lastIndex < code.length) {
+                highlighted += escapeHTML(code.substring(lastIndex));
+            }
+
+            highlightingContent.innerHTML = highlighted + "\n";
+            triggerAutocomplete();
+            updateCursorStats();
+        }
+
+        // --- AUTOCOMPLETE / INTELLISENSE SYSTEM ---
+        function triggerAutocomplete() {
+            const cursorPos = editing.selectionStart;
+            const textBeforeCursor = editing.value.substring(0, cursorPos);
+            const words = textBeforeCursor.split(/[\s\n=;{}()]+/);
+            const currentWord = words[words.length - 1].toLowerCase();
+
+            if (currentWord.length < 1) {
+                hideSuggestions();
+                return;
+            }
+
+            filteredSuggestions = autocompleteDictionary.filter(item => 
+                item.label.toLowerCase().includes(currentWord)
+            );
+
+            if (filteredSuggestions.length === 0) {
+                hideSuggestions();
+                return;
+            }
+
+            renderSuggestions();
+        }
+
+        function renderSuggestions() {
+            selectedSuggestionIndex = 0;
+            suggestionsBox.innerHTML = '';
+
+            filteredSuggestions.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = `p-2 cursor-pointer flex items-center justify-between ${index === 0 ? 'bg-purple-900/50 text-white' : 'hover:bg-slate-700/50 text-slate-300'}`;
+                div.onclick = () => insertSuggestion(item);
+                
+                let badgeColor = 'bg-blue-500/20 text-blue-300';
+                if (item.type === 'bloco') badgeColor = 'bg-purple-500/20 text-purple-300';
+                if (item.type === 'js') badgeColor = 'bg-amber-500/20 text-amber-300';
+                if (item.type === 'css') badgeColor = 'bg-emerald-500/20 text-emerald-300';
+                if (item.type === 'evento') badgeColor = 'bg-rose-500/20 text-rose-300';
+
+                div.innerHTML = `
+                    <div>
+                        <div class="font-semibold">${item.label}</div>
+                        <div class="text-[10px] text-slate-400">${item.desc}</div>
+                    </div>
+                    <span class="text-[9px] px-1.5 py-0.5 rounded font-mono ${badgeColor}">${item.type}</span>
+                `;
+                suggestionsBox.appendChild(div);
+            });
+
+            suggestionsBox.style.top = '40px';
+            suggestionsBox.style.left = '40px';
+            suggestionsBox.classList.remove('hidden');
+        }
+
+        function hideSuggestions() {
+            suggestionsBox.classList.add('hidden');
+        }
+
+        function insertSuggestion(item) {
+            const cursorPos = editing.selectionStart;
+            const textBeforeCursor = editing.value.substring(0, cursorPos);
+            const textAfterCursor = editing.value.substring(cursorPos);
+            
+            const words = textBeforeCursor.split(/[\s\n=;{}()]+/);
+            const lastWord = words[words.length - 1];
+            
+            const newTextBefore = textBeforeCursor.substring(0, textBeforeCursor.length - lastWord.length);
+            editing.value = newTextBefore + item.snippet + textAfterCursor;
+            
+            hideSuggestions();
+            updateEditor();
+            editing.focus();
+        }
+
+        function insertSnippet(type) {
+            let snippet = '';
+            if (type === 'h1') snippet = '\nh1 = "Título" {\n  color: #8b5cf6;\n}\n';
+            if (type === 'p') snippet = '\np = "Seu texto aqui..." {\n  font-size: 15px;\n}\n';
+            if (type === 'div') snippet = '\ndiv = "Conteúdo" {\n  padding: 15px;\n  background-color: #f1f5f9;\n}\n';
+            if (type === 'button') snippet = '\nbutton = "Clique Aqui" {\n  background-color: #10b981;\n  color: white;\n  onClick: alert("Clicou!")\n}\n';
+            if (type === 'input') snippet = '\ninput = "Digite..." {\n  border: 1px solid #ccc;\n  padding: 8px;\n}\n';
+            if (type === 'concat') snippet = ' "Texto" + $nome + " final" ';
+            if (type === 'alert') snippet = '\nalert:("Mensagem " + $nome)\n';
+
+            const cursorPos = editing.selectionStart;
+            editing.value = editing.value.substring(0, cursorPos) + snippet + editing.value.substring(cursorPos);
+            updateEditor();
+            editing.focus();
+        }
+
+        function handleKeyDown(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = editing.selectionStart;
+                const end = editing.selectionEnd;
+                editing.value = editing.value.substring(0, start) + "  " + editing.value.substring(end);
+                editing.selectionStart = editing.selectionEnd = start + 2;
+                updateEditor();
+            }
+
+            if (!suggestionsBox.classList.contains('hidden')) {
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    selectedSuggestionIndex = (selectedSuggestionIndex + 1) % filteredSuggestions.length;
+                    highlightSuggestionOption();
+                } else if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    selectedSuggestionIndex = (selectedSuggestionIndex - 1 + filteredSuggestions.length) % filteredSuggestions.length;
+                    highlightSuggestionOption();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    if (filteredSuggestions[selectedSuggestionIndex]) {
+                        insertSuggestion(filteredSuggestions[selectedSuggestionIndex]);
+                    }
+                } else if (e.key === 'Escape') {
+                    hideSuggestions();
+                }
+            }
+        }
+
+        function highlightSuggestionOption() {
+            Array.from(suggestionsBox.children).forEach((child, index) => {
+                if (index === selectedSuggestionIndex) {
+                    child.className = 'p-2 cursor-pointer flex items-center justify-between bg-purple-900/50 text-white';
+                } else {
+                    child.className = 'p-2 cursor-pointer flex items-center justify-between hover:bg-slate-700/50 text-slate-300';
+                }
+            });
+        }
+
+        // --- SUBSCRIPT TO HTML/JS TRANSPILER ENGINE COM CONCATENAÇÃO (+) E EVENTOS ---
+        function parseSubScriptToHTML(subscriptCode) {
+            let headContent = '';
+            let bodyHTML = '';
+            let inlineJS = '';
+            let elementCounter = 0;
+
+            function convertExpression(expr) {
+                if (!expr) return '""';
+                return expr.replace(/\$([a-zA-Z0-9_]+)/g, '$1');
+            }
+
+            // 1. Extrair variáveis JS
+            const varRegex = /(?:var|let|const)\s+([a-zA-Z0-9_]+)\s*=\s*(.*?)(?=\n|$);?/g;
+            let match;
+            while ((match = varRegex.exec(subscriptCode)) !== null) {
+                const varName = match[1];
+                const varVal = match[2].trim();
+                inlineJS += `var ${varName} = ${varVal};\n`;
+            }
+
+            // 2. Extrair 'head = { ... }'
+            const headRegex = /head\s*=\s*\{([^}]*)\}/s;
+            const headMatch = subscriptCode.match(headRegex);
+            if (headMatch) {
+                const headLines = headMatch[1].split('\n');
+                headLines.forEach(line => {
+                    const titleMatch = line.match(/title\s*=\s*(.*)/);
+                    if (titleMatch) {
+                        headContent += `<title>${titleMatch[1].replace(/"/g, '')}</title>\n`;
+                    }
+                    const metaMatch = line.match(/meta\s*=\s*(.*)/);
+                    if (metaMatch) {
+                        headContent += `<meta ${metaMatch[1].replace(/"/g, '')}>\n`;
+                    }
+                });
+            }
+
+            // 3. Extrair chamadas diretas alert:(...)
+            const alertRegex = /alert:\((.*?)\)/g;
+            while ((match = alertRegex.exec(subscriptCode)) !== null) {
+                let alertArg = match[1].trim();
+                let jsArg = convertExpression(alertArg);
+                inlineJS += `setTimeout(() => { alert(${jsArg}); console.log("[Alert Output]: " + (${jsArg})); }, 300);\n`;
+            }
+
+            // 4. Extrair Tags com suporte a Concatenação de Expressão (+) e Eventos
+            let cleanCode = subscriptCode
+                .replace(/\/\/[^\n]*/g, '')
+                .replace(headRegex, '');
+
+            const blockRegex = /([a-zA-Z0-9_]+)\s*=\s*([^{\n]+)(?:\{([^}]*)\})?/g;
+            let bMatch;
+            while ((bMatch = blockRegex.exec(cleanCode)) !== null) {
+                const tagName = bMatch[1];
+                const contentExpr = bMatch[2].trim();
+                const cssContent = bMatch[3] ? bMatch[3].trim() : '';
+                
+                if (['var', 'let', 'const', 'head'].includes(tagName)) continue;
+
+                elementCounter++;
+                const elemId = `sub_${tagName}_${elementCounter}`;
+
+                let cssStyles = [];
+                let onClickJS = '';
+
+                if (cssContent) {
+                    const cssLines = cssContent.split('\n');
+                    cssLines.forEach(line => {
+                        const parts = line.split(':');
+                        if (parts.length >= 2) {
+                            const key = parts[0].trim();
+                            const val = parts.slice(1).join(':').trim().replace(/;$/, '');
+                            
+                            if (key === 'onClick') {
+                                onClickJS = convertExpression(val);
+                            } else {
+                                cssStyles.push(`${key}: ${val};`);
+                            }
+                        }
+                    });
+                }
+
+                let inlineStyleAttr = cssStyles.length > 0 ? `style="${cssStyles.join(' ')}"` : '';
+                let onClickAttr = onClickJS ? `onclick="${onClickJS.replace(/"/g, '&quot;')}"` : '';
+
+                if (tagName === 'img') {
+                    bodyHTML += `<img id="${elemId}" ${inlineStyleAttr} ${onClickAttr} />\n`;
+                    inlineJS += `document.getElementById("${elemId}").src = ${convertExpression(contentExpr)};\n`;
+                } else if (tagName === 'input') {
+                    bodyHTML += `<input id="${elemId}" ${inlineStyleAttr} ${onClickAttr} />\n`;
+                    inlineJS += `document.getElementById("${elemId}").placeholder = ${convertExpression(contentExpr)};\n`;
+                } else {
+                    bodyHTML += `<${tagName} id="${elemId}" ${inlineStyleAttr} ${onClickAttr}></${tagName}>\n`;
+                    inlineJS += `document.getElementById("${elemId}").innerText = ${convertExpression(contentExpr)};\n`;
+                }
+            }
+
+            const compiledHTML = `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    ${headContent}
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; padding: 20px; margin: 0; }
+    </style>
+</head>
+<body>
+${bodyHTML}
+<script>
+    window.console.log = function(msg) {
+        window.parent.postMessage({ type: 'CONSOLE_LOG', message: msg }, '*');
+    };
+    
+    window.onerror = function(msg, url, lineNo) {
+        window.parent.postMessage({ type: 'CONSOLE_ERROR', message: "Erro: " + msg + " (Linha: " + lineNo + ")" }, '*');
+        return false;
+    };
+
+    try {
+        ${inlineJS}
+    } catch(e) {
+        console.log("Erro de Execução SubScript: " + e.message);
+    }
+<\/script>
+</body>
+</html>`;
+
+            return compiledHTML;
+        }
+
+        // --- RENDER & CONSOLE COMMUNICATION ---
+        function compileAndRender() {
+            const subscriptCode = editing.value;
+            const fullHTML = parseSubScriptToHTML(subscriptCode);
+            
+            const iframe = document.getElementById('previewFrame');
+            iframe.srcdoc = fullHTML;
+
+            const status = document.getElementById('statusIndicator');
+            status.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Atualizado`;
+        }
+
+        window.addEventListener('message', (event) => {
+            if (event.data) {
+                if (event.data.type === 'CONSOLE_LOG') {
+                    logToConsole(event.data.message, 'log');
+                } else if (event.data.type === 'CONSOLE_ERROR') {
+                    logToConsole(event.data.message, 'error');
+                }
+            }
+        });
+
+        function logToConsole(message, type = 'log') {
+            const entry = document.createElement('div');
+            const time = new Date().toLocaleTimeString();
+            
+            if (type === 'error') {
+                entry.className = "text-rose-400 flex items-center gap-2 bg-rose-950/30 p-1 rounded border border-rose-900/40";
+                entry.innerHTML = `<span class="text-slate-500">[${time}]</span> <span><i class="fa-solid fa-triangle-exclamation"></i> ${message}</span>`;
+            } else {
+                entry.className = "text-purple-300 flex items-center gap-2";
+                entry.innerHTML = `<span class="text-slate-500">[${time}]</span> <span>${message}</span>`;
+            }
+            
+            consoleOutput.appendChild(entry);
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function clearConsole() {
+            consoleOutput.innerHTML = `<div class="text-slate-500 italic">// Saídas de alertas e erros aparecerão aqui...</div>`;
+        }
+
+        function clearEditor() {
+            if (confirm("Deseja realmente limpar todo o código?")) {
+                editing.value = "";
+                updateEditor();
+                compileAndRender();
+            }
+        }
+
+        // --- FILE MANAGEMENT SYSTEM (.sub15) ---
+        function saveFile() {
+            downloadFile(currentFileName, editing.value);
+        }
+
+        function saveFileAs() {
+            const name = prompt("Digite o nome do arquivo:", currentFileName);
+            if (name) {
+                currentFileName = name.endsWith('.sub15') ? name : name + '.sub15';
+                document.getElementById('fileNameText').innerText = currentFileName;
+                saveFile();
+            }
+        }
+
+        function exportToHTML() {
+            const compiledHTML = parseSubScriptToHTML(editing.value);
+            const htmlFileName = currentFileName.replace('.sub15', '.html');
+            downloadFile(htmlFileName, compiledHTML, 'text/html');
+        }
+
+        function downloadFile(filename, text, type = 'text/plain') {
+            const element = document.createElement('a');
+            const file = new Blob([text], { type: type });
+            element.href = URL.createObjectURL(file);
+            element.download = filename;
+            document.body.appendChild(element);
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        function handleFileOpen(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            currentFileName = file.name;
+            document.getElementById('fileNameText').innerText = currentFileName;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                editing.value = e.target.result;
+                updateEditor();
+                compileAndRender();
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
