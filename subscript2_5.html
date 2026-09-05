@@ -124,7 +124,7 @@
             <div class="flex items-center space-x-2 bg-gradient-to-r from-purple-600 to-indigo-600 px-3 py-1 rounded-lg text-white font-bold text-sm tracking-wide shadow-lg">
                 <i class="fa-solid font-mono text-lg">&lt;/&gt;</i>
                 <span>SubScript IDE</span>
-                <span class="text-[10px] bg-black/30 px-1.5 py-0.5 rounded text-purple-200">v2.5 Full</span>
+                <span class="text-[10px] bg-black/30 px-1.5 py-0.5 rounded text-purple-200">v2.5 Simplified</span>
             </div>
             <span id="currentFileName" class="text-xs text-slate-400 bg-slate-800/60 border border-slate-700/50 px-2.5 py-1 rounded-md flex items-center gap-1.5">
                 <i class="fa-regular fa-file-code text-purple-400"></i>
@@ -136,16 +136,16 @@
         <div class="flex items-center space-x-2">
             <input type="file" id="fileInput" accept=".sub15" class="hidden" onchange="handleFileOpen(event)">
             
-            <button onclick="document.getElementById('fileInput').click()" title="Abrir Arquivo (.sub15)" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+            <button onclick="document.getElementById('fileInput').click()" title="Abrir Ficheiro (.sub15)" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
                 <i class="fa-solid fa-folder-open text-amber-400"></i> Abrir
             </button>
 
-            <button onclick="saveFile()" title="Salvar (.sub15)" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
-                <i class="fa-solid fa-floppy-disk text-blue-400"></i> Salvar
+            <button onclick="saveFile()" title="Guardar (.sub15)" class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-floppy-disk text-blue-400"></i> Guardar
             </button>
 
-            <button onclick="saveFileAs()" title="Salvar Como..." class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
-                <i class="fa-solid fa-file-export text-indigo-400"></i> Salvar Como
+            <button onclick="saveFileAs()" title="Guardar Como..." class="px-2.5 py-1.5 text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-file-export text-indigo-400"></i> Guardar Como
             </button>
 
             <div class="h-4 w-[1px] bg-slate-800 mx-1"></div>
@@ -162,12 +162,11 @@
 
     <!-- Quick Snippets Bar -->
     <div class="bg-slate-900/90 border-b border-slate-800 px-4 py-1 flex items-center gap-2 overflow-x-auto text-xs text-slate-400 select-none">
-        <span class="text-[11px] text-slate-500 font-medium mr-1"><i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Snippets 2.5:</span>
+        <span class="text-[11px] text-slate-500 font-medium mr-1"><i class="fa-solid fa-wand-magic-sparkles text-purple-400"></i> Snippets:</span>
         <button onclick="insertSnippet('head')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-purple-300 border border-slate-700/60 transition">+ head</button>
         <button onclick="insertSnippet('style')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-amber-300 border border-slate-700/60 transition">+ style global</button>
-        <button onclick="insertSnippet('script')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-cyan-300 border border-slate-700/60 transition">+ script JS</button>
-        <button onclick="insertSnippet('divContainer')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-emerald-300 border border-slate-700/60 transition">+ Container com Aninhamento</button>
-        <button onclick="insertSnippet('form')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-blue-300 border border-slate-700/60 transition">+ Formulário</button>
+        <button onclick="insertSnippet('function')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-cyan-300 border border-slate-700/60 transition">+ Função JS</button>
+        <button onclick="insertSnippet('divContainer')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-emerald-300 border border-slate-700/60 transition">+ Container Aninhado</button>
         <button onclick="insertSnippet('alert')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-rose-300 border border-slate-700/60 transition">+ alert:()</button>
     </div>
 
@@ -243,7 +242,7 @@
 
     <!-- JavaScript Logic -->
     <script>
-        // SubScript 2.5 Full Template Code
+        // SubScript 2.5 Simplified Full Template Code
         const initialCode = `head = {
   title = "Painel Interativo SubScript 2.5"
   meta = "charset=UTF-8"
@@ -293,11 +292,24 @@ style {
   }
 }
 
-// 2. Variáveis Globais SubScript
+// 2. Variáveis Globais em SubScript (Lógicas e fáceis)
 var usuario = "Carlos Eduardo"
 var saldo = 1250
 
-// 3. Estrutura HTML Aninhada com Atributos
+// 3. Função JavaScript direta sem precisar de blocos complexos!
+function atualizarPerfil() {
+  var el = document.getElementById("campoNome");
+  if (!el) return;
+  var novoNome = el.value;
+  if (!novoNome || novoNome.trim() === "") {
+    alert("Por favor, digite um nome válido!");
+    return;
+  }
+  alert("Perfil atualizado de " + usuario + " para " + novoNome);
+  console.log("Nome alterado para: " + novoNome);
+}
+
+// 4. Estrutura de Tags e Interface
 div [class="card"] {
   h1 = "Bem-vindo, " + $usuario + "!" {
     color: #c084fc;
@@ -316,45 +328,28 @@ div [class="card"] {
     margin-bottom: 6px;
   }
 
-  input [type="text", id="campoNome", placeholder="Digite um novo nome..."] {
-    value: $usuario
-  }
+  input [type="text", id="campoNome", placeholder="Digite um novo nome..."]
 
   button [class="btn-primary"] = "Atualizar Perfil" {
     onClick: atualizarPerfil()
   }
 }
 
-// 4. Bloco de JavaScript Completo Nativo
-script {
-  function atualizarPerfil() {
-    var novoNome = document.getElementById("campoNome").value;
-    if (novoNome.trim() === "") {
-      alert("Por favor, digite um nome válido!");
-      return;
-    }
-    alert("Perfil atualizado de " + usuario + " para " + novoNome);
-    console.log("Usuário alterou o nome para: " + novoNome);
-  }
-
-  console.log("SubScript 2.5 inicializado com sucesso!");
-}`;
+alert:("SubScript 2.5 carregado com sucesso para " + $usuario)`;
 
         // Complete Dictionary for SubScript 2.5 Autocomplete
         const autocompleteDictionary = [
             { label: 'head', type: 'bloco', snippet: 'head = {\n  title = "Título"\n  meta = "charset=UTF-8"\n}', desc: 'Cabeçalho e Metadados' },
             { label: 'style', type: 'bloco', snippet: 'style {\n  body {\n    background-color: #1e293b;\n    color: white;\n  }\n}', desc: 'Bloco de CSS Global' },
-            { label: 'script', type: 'bloco', snippet: 'script {\n  function minhaFuncao() {\n    alert("Executando JS!");\n  }\n}', desc: 'Bloco de JavaScript Nativo' },
+            { label: 'function', type: 'js', snippet: 'function minhaFuncao() {\n  alert("Executando!");\n}', desc: 'Função JavaScript Direta' },
             { label: 'div', type: 'tag', snippet: 'div [class="card"] {\n  h2 = "Título"\n  p = "Conteúdo"\n}', desc: 'Container Div Aninhado' },
             { label: 'h1', type: 'tag', snippet: 'h1 = "Título Principal" {\n  color: #8b5cf6;\n}', desc: 'Cabeçalho H1' },
             { label: 'p', type: 'tag', snippet: 'p = "Texto " + $variavel {\n  font-size: 15px;\n}', desc: 'Parágrafo de Texto' },
             { label: 'button', type: 'tag', snippet: 'button [class="btn"] = "Clique Aqui" {\n  onClick: acaoBotao()\n}', desc: 'Botão com Ação' },
-            { label: 'input', type: 'tag', snippet: 'input [type="text", placeholder="Digite aqui..."] {\n  padding: 8px;\n}', desc: 'Campo de Entrada' },
-            { label: 'form', type: 'tag', snippet: 'form [id="meuForm"] {\n  input [type="text", placeholder="Nome"]\n  button = "Enviar"\n}', desc: 'Formulário Completo' },
+            { label: 'input', type: 'tag', snippet: 'input [type="text", id="meuInput", placeholder="Digite aqui..."]', desc: 'Campo de Entrada' },
             { label: 'var', type: 'js', snippet: 'var nomeVariavel = "valor"', desc: 'Declaração de Variável' },
             { label: 'alert:(...)', type: 'func', snippet: 'alert:("Mensagem " + $var)', desc: 'Caixa de Diálogo' },
             { label: 'onClick', type: 'evento', snippet: 'onClick: minhaFuncao()', desc: 'Evento de Clique' },
-            { label: 'onChange', type: 'evento', snippet: 'onChange: aoMudar()', desc: 'Evento de Alteração' },
             { label: 'class="..."', type: 'attr', snippet: '[class="nome-da-classe"]', desc: 'Atributo de Classe CSS' },
             { label: 'id="..."', type: 'attr', snippet: '[id="meuElemento"]', desc: 'Atributo de ID Único' }
         ];
@@ -419,7 +414,7 @@ script {
                 '("(?:[^"\\\\]|\\\\.)*"|\'(?:[^\'\\\\]|\\\\.)*\')',                             // 2. Strings
                 '(\\$[a-zA-Z0-9_]+)',                                                          // 3. Variáveis $var
                 '(\\b(?:var|let|const|function|return|if|else|for|while)\\b\\s+[a-zA-Z0-9_]+)',// 4. Declarações JS
-                '(\\b(?:head|style|script|h1|h2|h3|h4|h5|h6|p|div|span|button|input|a|img|ul|li|ol|form|label|textarea|select|option|header|footer|nav|section|article|iframe|canvas|video|audio|table|tr|td|th)\\b)(?=\\s*[\\[={]|\\s*$)', // 5. Tags/Blocos
+                '(\\b(?:head|style|script|h1|h2|h3|h4|h5|h6|p|div|span|button|input|a|img|ul|li|ol|form|label|textarea|select|option|header|footer|nav|section|article|canvas|video|audio|table|tr|td|th)\\b)(?=\\s*[\\[={]|\\s*$)', // 5. Tags/Blocos
                 '(\\b\\[[^\\]]*\\])',                                                           // 6. Atributos HTML [class="...", id="..."]
                 '(\\balert\\b)(?=\\s*:\\s*\\()',                                                // 7. Função alert:(...)
                 '(\\b(?:onClick|onChange|onInput|onSubmit|onMouseOver|color|background-color|background|font-size|font-family|font-weight|text-align|margin|margin-top|margin-bottom|padding|border|border-radius|box-shadow|display|max-width|width|height|cursor|opacity)\\b)(?=\\s*[:=])', // 8. Propriedades/Eventos
@@ -574,9 +569,8 @@ script {
             let snippet = '';
             if (type === 'head') snippet = '\nhead = {\n  title = "Meu App SubScript 2.5"\n  meta = "charset=UTF-8"\n}\n';
             if (type === 'style') snippet = '\nstyle {\n  body {\n    background-color: #0f172a;\n    color: #f8fafc;\n  }\n}\n';
-            if (type === 'script') snippet = '\nscript {\n  function minhaAcao() {\n    console.log("Executado!");\n  }\n}\n';
-            if (type === 'divContainer') snippet = '\ndiv [class="container"] {\n  h2 = "Título Interno"\n  p = "Parágrafo do bloco"\n}\n';
-            if (type === 'form') snippet = '\nform [id="cadastroForm"] {\n  label = "Nome:"\n  input [type="text", placeholder="Seu nome"]\n  button = "Enviar"\n}\n';
+            if (type === 'function') snippet = '\nfunction minhaFuncao() {\n  alert("Sucesso!");\n}\n';
+            if (type === 'divContainer') snippet = '\ndiv [class="card"] {\n  h2 = "Título Interno"\n  p = "Parágrafo do bloco"\n}\n';
             if (type === 'alert') snippet = '\nalert:("Mensagem " + $usuario)\n';
 
             const cursorPos = editing.selectionStart;
@@ -625,13 +619,12 @@ script {
             });
         }
 
-        // --- COMPILADOR SUBSCRIPT 2.5 (SUPORTE TOTAL HTML/CSS/JS) ---
+        // --- COMPILADOR UNIFICADO E DIRETO SUBSCRIPT 2.5 ---
         function parseSubScriptToHTML(subscriptCode) {
             let headContent = '';
             let styleCSS = '';
-            let scriptJS = '';
-            let bodyHTML = '';
-            let inlineJS = '';
+            let globalScripts = '';
+            let inlineDomJS = '';
             let elementCounter = 0;
 
             function convertExpression(expr) {
@@ -639,36 +632,19 @@ script {
                 return expr.replace(/\$([a-zA-Z0-9_]+)/g, '$1');
             }
 
-            // 1. Bloco 'style { ... }'
-            const styleRegex = /style\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/s;
-            const styleMatch = subscriptCode.match(styleRegex);
+            let code = subscriptCode;
+
+            // 1. Extrair bloco 'style { ... }'
+            const styleRegex = /style\s*\{([\s\S]*?)\n\}/;
+            const styleMatch = code.match(styleRegex);
             if (styleMatch) {
                 styleCSS = styleMatch[1].trim();
+                code = code.replace(styleRegex, '');
             }
 
-            // 2. Bloco 'script { ... }'
-            const scriptRegex = /script\s*\{([^}]*(?:\{[^}]*\}[^}]*)*)\}/s;
-            const scriptMatch = subscriptCode.match(scriptRegex);
-            if (scriptMatch) {
-                scriptJS = scriptMatch[1].trim();
-            }
-
-            // 3. Extrair variáveis globais JS fuera dos blocos
-            const varRegex = /(?:var|let|const)\s+([a-zA-Z0-9_]+)\s*=\s*(.*?)(?=\n|$);?/g;
-            let match;
-            while ((match = varRegex.exec(subscriptCode)) !== null) {
-                // Evita pegar dentro de script {}
-                if (scriptMatch && match.index >= scriptMatch.index && match.index <= scriptMatch.index + scriptMatch[0].length) {
-                    continue;
-                }
-                const varName = match[1];
-                const varVal = match[2].trim();
-                inlineJS += `var ${varName} = ${varVal};\n`;
-            }
-
-            // 4. Bloco 'head = { ... }'
-            const headRegex = /head\s*=\s*\{([^}]*)\}/s;
-            const headMatch = subscriptCode.match(headRegex);
+            // 2. Extrair bloco 'head = { ... }'
+            const headRegex = /head\s*=\s*\{([\s\S]*?)\}/;
+            const headMatch = code.match(headRegex);
             if (headMatch) {
                 const headLines = headMatch[1].split('\n');
                 headLines.forEach(line => {
@@ -677,104 +653,156 @@ script {
                     const metaMatch = line.match(/meta\s*=\s*(.*)/);
                     if (metaMatch) headContent += `<meta ${metaMatch[1].replace(/"/g, '')}>\n`;
                 });
+                code = code.replace(headRegex, '');
             }
 
-            // 5. Chamadas alert:(...)
+            // 3. Extrair Funções JS Globais e Variáveis Globais
+            // Captura funções como: function minhaFn() { ... }
+            const funcRegex = /function\s+([a-zA-Z0-9_]+)\s*\(([^)]*)\)\s*\{([\s\S]*?)\n\}/g;
+            let fMatch;
+            while ((fMatch = funcRegex.exec(code)) !== null) {
+                globalScripts += fMatch[0] + '\n';
+            }
+            code = code.replace(funcRegex, '');
+
+            // Extrair variáveis globais
+            const varRegex = /(?:var|let|const)\s+([a-zA-Z0-9_]+)\s*=\s*(.*?)(?=\n|$);?/g;
+            let match;
+            while ((match = varRegex.exec(code)) !== null) {
+                const varName = match[1];
+                const varVal = match[2].trim();
+                globalScripts += `var ${varName} = ${varVal};\n`;
+            }
+            code = code.replace(varRegex, '');
+
+            // 4. Extrair chamadas diretas de alert:(...)
             const alertRegex = /alert:\((.*?)\)/g;
-            while ((match = alertRegex.exec(subscriptCode)) !== null) {
-                if (scriptMatch && match.index >= scriptMatch.index && match.index <= scriptMatch.index + scriptMatch[0].length) {
-                    continue;
-                }
+            while ((match = alertRegex.exec(code)) !== null) {
                 let alertArg = match[1].trim();
                 let jsArg = convertExpression(alertArg);
-                inlineJS += `setTimeout(() => { alert(${jsArg}); console.log("[Alert Output]: " + (${jsArg})); }, 300);\n`;
+                inlineDomJS += `setTimeout(() => { alert(${jsArg}); console.log("[Alert Output]: " + (${jsArg})); }, 200);\n`;
             }
+            code = code.replace(alertRegex, '');
 
-            // 6. Processador de Tags e Atributos SubScript 2.5
-            let cleanCode = subscriptCode
-                .replace(/\/\/[^\n]*/g, '')
-                .replace(headRegex, '');
+            // 5. Parser da Árvore de HTML
+            function parseSubScriptTree(inputCode) {
+                let htmlOutput = '';
+                let clean = inputCode.replace(/\/\/[^\n]*/g, '').trim();
+                if (!clean) return '';
 
-            if (styleMatch) cleanCode = cleanCode.replace(styleRegex, '');
-            if (scriptMatch) cleanCode = cleanCode.replace(scriptRegex, '');
+                const lines = clean.split('\n');
+                let i = 0;
 
-            // Parser de elementos HTML com atributos [attr="val"] e estilos inline { css; onClick: fn() }
-            const tagPattern = /\b(h1|h2|h3|h4|h5|h6|p|div|span|button|input|a|img|ul|li|ol|form|label|textarea|select|option|header|footer|nav|section|article|canvas|video|audio|table|tr|td|th)\b(?:\s*\[([^\]]*)\])?(?:\s*=\s*([^{\n]+))?(?:\s*\{([^}]*)\})?/g;
+                while (i < lines.length) {
+                    let line = lines[i].trim();
+                    if (!line) { i++; continue; }
 
-            let tMatch;
-            while ((tMatch = tagPattern.exec(cleanCode)) !== null) {
-                const tagName = tMatch[1];
-                const rawAttrs = tMatch[2] ? tMatch[2].trim() : '';
-                const contentExpr = tMatch[3] ? tMatch[3].trim() : null;
-                const cssContent = tMatch[4] ? tMatch[4].trim() : '';
+                    const tagMatch = line.match(/^([a-zA-Z0-9]+)(?:\s*\[([^\]]*)\])?(?:\s*=\s*([^{\n]+))?(?:\s*\{)?$/);
 
-                if (['var', 'let', 'const', 'head', 'style', 'script'].includes(tagName)) continue;
+                    if (tagMatch) {
+                        const tagName = tagMatch[1];
+                        const rawAttrs = tagMatch[2] ? tagMatch[2].trim() : '';
+                        const contentExpr = tagMatch[3] ? tagMatch[3].trim() : null;
+                        const hasBrace = line.endsWith('{');
 
-                elementCounter++;
-                const elemId = `sub_${tagName}_${elementCounter}`;
+                        elementCounter++;
+                        let elemId = `sub_${tagName}_${elementCounter}`;
 
-                // Processa Atributos [class="...", id="..."]
-                let attrPairs = [];
-                if (rawAttrs) {
-                    const attrsList = rawAttrs.split(',');
-                    attrsList.forEach(attr => {
-                        const parts = attr.split('=');
-                        if (parts.length === 2) {
-                            const key = parts[0].trim();
-                            const val = parts[1].trim().replace(/"/g, '');
-                            attrPairs.push(`${key}="${val}"`);
-                        }
-                    });
-                }
-
-                // Processa Estilos CSS Inline e Eventos
-                let cssStyles = [];
-                let onClickJS = '';
-                let onChangeJS = '';
-
-                if (cssContent) {
-                    const cssLines = cssContent.split('\n');
-                    cssLines.forEach(line => {
-                        const parts = line.split(':');
-                        if (parts.length >= 2) {
-                            const key = parts[0].trim();
-                            const val = parts.slice(1).join(':').trim().replace(/;$/, '');
-                            
-                            if (key === 'onClick') {
-                                onClickJS = convertExpression(val);
-                            } else if (key === 'onChange' || key === 'onInput') {
-                                onChangeJS = convertExpression(val);
-                            } else {
-                                cssStyles.push(`${key}: ${val};`);
+                        let attrPairs = [];
+                        if (rawAttrs) {
+                            const attrRegex = /([a-zA-Z0-9_\-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s,]+))/g;
+                            let aMatch;
+                            while ((aMatch = attrRegex.exec(rawAttrs)) !== null) {
+                                const key = aMatch[1].trim();
+                                const val = (aMatch[3] !== undefined ? aMatch[3] : (aMatch[4] !== undefined ? aMatch[4] : aMatch[5])).trim();
+                                if (key.toLowerCase() === 'id') {
+                                    elemId = val;
+                                } else {
+                                    attrPairs.push(`${key}="${val}"`);
+                                }
                             }
                         }
-                    });
+
+                        let cssStyles = [];
+                        let onClickJS = '';
+                        let innerBodyContent = '';
+
+                        if (hasBrace) {
+                            let braceDepth = 1;
+                            let blockLines = [];
+                            i++;
+                            while (i < lines.length && braceDepth > 0) {
+                                let curLine = lines[i];
+                                if (curLine.includes('{')) braceDepth++;
+                                if (curLine.includes('}')) braceDepth--;
+                                if (braceDepth > 0) {
+                                    blockLines.push(curLine);
+                                }
+                                i++;
+                            }
+
+                            let isCssBlock = blockLines.every(l => {
+                                let trimmed = l.trim();
+                                return !trimmed || trimmed.includes(':') || trimmed.startsWith('//');
+                            });
+
+                            if (isCssBlock) {
+                                blockLines.forEach(l => {
+                                    const parts = l.split(':');
+                                    if (parts.length >= 2) {
+                                        const key = parts[0].trim();
+                                        const val = parts.slice(1).join(':').trim().replace(/;$/, '');
+                                        if (key === 'onClick') {
+                                            onClickJS = convertExpression(val);
+                                        } else {
+                                            cssStyles.push(`${key}: ${val};`);
+                                        }
+                                    }
+                                });
+                            } else {
+                                innerBodyContent = parseSubScriptTree(blockLines.join('\n'));
+                            }
+                        } else {
+                            i++;
+                        }
+
+                        let attrString = ` id="${elemId}"` + (attrPairs.length > 0 ? ' ' + attrPairs.join(' ') : '');
+                        let styleAttr = cssStyles.length > 0 ? ` style="${cssStyles.join(' ')}"` : '';
+                        let onClickAttr = onClickJS ? ` onclick="${onClickJS.replace(/"/g, '&quot;')}"` : '';
+
+                        if (tagName === 'img') {
+                            htmlOutput += `<img${attrString}${styleAttr}${onClickAttr} />\n`;
+                            if (contentExpr) inlineDomJS += `if(document.getElementById("${elemId}")) document.getElementById("${elemId}").src = ${convertExpression(contentExpr)};\n`;
+                        } else if (tagName === 'input') {
+                            htmlOutput += `<input${attrString}${styleAttr}${onClickAttr} />\n`;
+                            if (contentExpr) inlineDomJS += `if(document.getElementById("${elemId}")) document.getElementById("${elemId}").value = ${convertExpression(contentExpr)};\n`;
+                        } else {
+                            htmlOutput += `<${tagName}${attrString}${styleAttr}${onClickAttr}>${innerBodyContent}</${tagName}>\n`;
+                            if (contentExpr) {
+                                inlineDomJS += `if(document.getElementById("${elemId}")) document.getElementById("${elemId}").innerText = ${convertExpression(contentExpr)};\n`;
+                            }
+                        }
+                    } else {
+                        i++;
+                    }
                 }
 
-                let attrString = attrPairs.length > 0 ? ' ' + attrPairs.join(' ') : '';
-                let styleAttr = cssStyles.length > 0 ? ` style="${cssStyles.join(' ')}"` : '';
-                let onClickAttr = onClickJS ? ` onclick="${onClickJS.replace(/"/g, '&quot;')}"` : '';
-                let onChangeAttr = onChangeJS ? ` onchange="${onChangeJS.replace(/"/g, '&quot;')}"` : '';
-
-                if (tagName === 'img') {
-                    bodyHTML += `<img id="${elemId}"${attrString}${styleAttr}${onClickAttr} />\n`;
-                    if (contentExpr) inlineJS += `document.getElementById("${elemId}").src = ${convertExpression(contentExpr)};\n`;
-                } else if (tagName === 'input') {
-                    bodyHTML += `<input id="${elemId}"${attrString}${styleAttr}${onClickAttr}${onChangeAttr} />\n`;
-                    if (contentExpr) inlineJS += `document.getElementById("${elemId}").value = ${convertExpression(contentExpr)};\n`;
-                } else {
-                    bodyHTML += `<${tagName} id="${elemId}"${attrString}${styleAttr}${onClickAttr}${onChangeAttr}></${tagName}>\n`;
-                    if (contentExpr) inlineJS += `document.getElementById("${elemId}").innerText = ${convertExpression(contentExpr)};\n`;
-                }
+                return htmlOutput;
             }
 
-            // Compila o HTML5 Completo
+            const bodyHTML = parseSubScriptTree(code);
+
+            // Compila o documento HTML5 onde as funções ficam no escopo window global do documento!
             const compiledHTML = `<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     ${headContent}
     ${styleCSS ? `<style>\n${styleCSS}\n</style>` : ''}
+    <script>
+        // Funções e variáveis globais
+        ${globalScripts}
+    <\/script>
 </head>
 <body>
 ${bodyHTML}
@@ -789,12 +817,13 @@ ${bodyHTML}
         return false;
     };
 
-    try {
-        ${inlineJS}
-        ${scriptJS}
-    } catch(e) {
-        console.log("Erro de Execução SubScript 2.5: " + e.message);
-    }
+    document.addEventListener("DOMContentLoaded", function() {
+        try {
+            ${inlineDomJS}
+        } catch(e) {
+            console.log("Erro ao carregar DOM SubScript: " + e.message);
+        }
+    });
 <\/script>
 </body>
 </html>`;
