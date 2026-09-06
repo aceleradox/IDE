@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SubScript IDE (.sub15) - v2.9.2 Pages & Place Fix</title>
+    <title>SubScript IDE (.sub15) - v2.9.4 Fixes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -11,7 +11,7 @@
     <style>
         body { font-family: 'Inter', sans-serif; }
         .code-font { 
-            font-family: 'Consolas', 'Fira Code', 'Courier New', monospace !important; 
+            font-family: 'Consolas', 'Courier New', monospace !important; 
             tab-size: 2 !important; 
             -moz-tab-size: 2 !important; 
             letter-spacing: 0px !important;
@@ -39,7 +39,7 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
         #lineNumbers {
-            font-family: 'Consolas', 'Fira Code', 'Courier New', monospace !important;
+            font-family: 'Consolas', 'Courier New', monospace !important;
             font-size: 14px !important;
             line-height: 22px !important;
             padding: 12px 12px 12px 8px !important;
@@ -54,7 +54,7 @@
             border: 0 !important;
             width: 100% !important;
             height: 100% !important;
-            font-family: 'Consolas', 'Fira Code', 'Courier New', monospace !important;
+            font-family: 'Consolas', 'Courier New', monospace !important;
             font-size: 14px !important;
             line-height: 22px !important;
             box-sizing: border-box !important;
@@ -94,6 +94,7 @@
             letter-spacing: inherit !important;
             word-spacing: inherit !important;
             font-variant-ligatures: none !important;
+            font-weight: 400 !important;
         }
     </style>
 </head>
@@ -104,7 +105,7 @@
             <div class="flex items-center space-x-2 bg-gradient-to-r from-amber-500 via-purple-600 to-indigo-600 px-3 py-1 rounded-lg text-white font-bold text-sm tracking-wide shadow-lg">
                 <i class="fa-solid font-mono text-lg">&lt;/&gt;</i>
                 <span>SubScript IDE</span>
-                <span class="text-[10px] bg-black/30 px-1.5 py-0.5 rounded text-amber-200">v2.9.2</span>
+                <span class="text-[10px] bg-black/30 px-1.5 py-0.5 rounded text-amber-200">v2.9.5</span>
             </div>
             <span id="currentFileName" class="text-xs text-slate-400 bg-slate-800/60 border border-slate-700/50 px-2.5 py-1 rounded-md flex items-center gap-1.5">
                 <i class="fa-regular fa-file-code text-amber-400"></i>
@@ -140,11 +141,13 @@
     </header>
 
     <div class="bg-slate-900/90 border-b border-slate-800 px-4 py-1 flex items-center gap-2 overflow-x-auto text-xs text-slate-400 select-none">
-        <span class="text-[11px] text-slate-500 font-medium mr-1"><i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Snippets 2.9:</span>
+        <span class="text-[11px] text-slate-500 font-medium mr-1"><i class="fa-solid fa-wand-magic-sparkles text-amber-400"></i> Snippets:</span>
         <button onclick="insertSnippet('pageParam')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-amber-300 border border-slate-700/60 transition">+ page = rota(param)</button>
         <button onclick="insertSnippet('popupSnippet')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-pink-300 border border-slate-700/60 transition">+ popup = nome</button>
         <button onclick="insertSnippet('onclickPlace')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-purple-300 border border-slate-700/60 transition">+ onclick.place</button>
-        <button onclick="insertSnippet('constSnippet')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-emerald-300 border border-slate-700/60 transition">+ const = nometravado</button>
+        <button onclick="insertSnippet('varSnippet')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-cyan-300 border border-slate-700/60 transition">+ var</button>
+        <button onclick="insertSnippet('constSnippet')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-emerald-300 border border-slate-700/60 transition">+ const</button>
+        <button onclick="insertSnippet('pagesArraySnippet')" class="px-2 py-0.5 bg-slate-800 hover:bg-slate-700 rounded text-indigo-300 border border-slate-700/60 transition">+ var = pagesarray[]</button>
     </div>
 
     <div class="flex-1 flex overflow-hidden relative">
@@ -165,7 +168,6 @@
                     <pre id="highlighting" class="absolute top-0 left-0 pointer-events-none bg-transparent overflow-hidden" aria-hidden="true"><code id="highlighting-content"></code></pre>
                     <textarea id="editing" spellcheck="false" class="absolute top-0 left-0 resize-none outline-none overflow-auto" oninput="updateEditor()" onkeydown="handleKeyDown(event)" onclick="updateCursorStats()" onkeyup="updateCursorStats()"></textarea>
                 </div>
-                <div id="suggestionsBox" class="hidden absolute z-50 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl max-h-60 w-80 overflow-y-auto text-xs code-font divide-y divide-slate-700/50"></div>
             </div>
         </div>
 
@@ -199,139 +201,170 @@
 
     <script>
         const initialCode = `head = {
-  title = "Aplicação SubScript 2.9"
+  title = "Aplicação SubScript 2.9 - Exemplo Completo"
   meta = "charset=UTF-8"
 }
 
-page = inicio() {
-  div [class="card"].style {
-    background-color: #1e293b;
-    padding: 24px;
-    border-radius: 12px;
-    max-width: 480px;
-    margin: 20px auto;
-    border: 1px solid #334155;
+// 1. Variáveis e Constantes Globais
+var user = "Carlos"
+const empresa = "SubScript Studio"
+var paginas = pagesarray["inicio", "perfil"]
+
+// 2. Elementos de Nível Raiz (Cabeçalho Global)
+div [class=header].style {
+  background-color: #1e293b;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #334155;
+} {
+  h1 = "Painel: " + $empresa " | Usuário: " + $user .style {
+    color: #f59e0b;
+    margin: 0;
+    font-size: 22px;
     font-family: sans-serif;
+  }
+  p = "Navegue entre as páginas ou abra modais com os recursos do SubScript 2.9:".style {
+    color: #94a3b8;
+    margin-top: 8px;
+    font-size: 13px;
+    font-family: sans-serif;
+  }
+}
+
+// 3. Definição da Página de Início
+page = inicio() {
+  div [class=card].style {
+    background-color: #0f172a;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #334155;
+    margin-bottom: 15px;
   } {
-    h1 = "Painel Principal" {
-      color: #f59e0b;
+    h2 = "Página Inicial (Rota: inicio)".style {
+      color: #38bdf8;
       margin-top: 0;
+      font-family: sans-serif;
     }
-
-    p = "Bem-vindo ao sistema de rotas e menus do SubScript 2.9." {
+    p = "Esta é a página principal. Clique nos botões para testar as funcionalidades:".style {
       color: #cbd5e1;
+      font-family: sans-serif;
     }
-
-    button = "Abrir Popup".style {
+    
+    // Botão para Abrir Popup
+    button [onClick=SubScript.openPopup('modalExemplo')] = "Abrir Popup Modal".style {
       background-color: #ec4899;
       color: white;
       padding: 10px 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      margin-right: 8px;
-      onClick: SubScript.openPopup("confirmModal")
+      margin-right: 10px;
+      font-weight: bold;
     }
 
-    button = "Menu Opções".style {
-      background-color: #3b82f6;
+    // Botão para Navegar enviando Parâmetro
+    button [onClick=SubScript.navigate('perfil', $user)] = "Ir para Perfil com Parâmetro".style {
+      background-color: #6366f1;
       color: white;
       padding: 10px 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-weight: bold;
+    }
+
+    // Exemplo de onclick.place (Menu Contextual Flutuante)
+    div [class=menu-place-box].style {
+      margin-top: 18px;
+      padding: 14px;
+      background-color: #1e293b;
+      border-radius: 8px;
+      border: 1px dashed #64748b;
+      cursor: pointer;
+    } {
+      p = "Clique aqui para disparar o 'onclick.place' (Menu Flutuante)".style {
+        color: #e879f9;
+        margin: 0;
+        font-family: sans-serif;
+      }
       onclick.place: {
-        div.style {
+        div .style {
           background-color: #0f172a;
-          color: white;
-          padding: 12px;
-          border-radius: 8px;
           border: 1px solid #475569;
-          box-shadow: 0 10px 25px rgba(0,0,0,0.6);
+          padding: 10px;
+          border-radius: 8px;
+          box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         } {
-          p = "👉 Ver Perfil de Carlos".style {
-            margin: 0;
-            padding: 8px;
-            cursor: pointer;
-            color: #38bdf8;
-            onClick: SubScript.navigate("perfil", "Carlos Eduardo")
-          }
+          p = "Opção 1: Editar Perfil".style { color: #38bdf8; margin: 4px 0; font-family: sans-serif; cursor: pointer; }
+          p = "Opção 2: Configurações".style { color: #a3e635; margin: 4px 0; font-family: sans-serif; cursor: pointer; }
+          p = "Opção 3: Sair".style { color: #f43f5e; margin: 4px 0; font-family: sans-serif; cursor: pointer; }
         }
       }
     }
   }
 }
 
-page = perfil(usuario) {
-  div [class="card"].style {
+// 4. Definição da Página de Perfil (com parâmetro)
+page = perfil(nomeUsuario) {
+  div [class=card].style {
     background-color: #0f172a;
-    padding: 24px;
-    border-radius: 12px;
-    max-width: 480px;
-    margin: 20px auto;
-    border: 1px solid #38bdf8;
-    font-family: sans-serif;
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #334155;
   } {
-    h2 = "Perfil do Usuário" {
-      color: #38bdf8;
+    h2 = "Perfil do Usuário: " + $nomeUsuario .style {
+      color: #a3e635;
       margin-top: 0;
+      font-family: sans-serif;
     }
-    p = "Bem-vindo de volta, " + $usuario + "!" {
-      color: #94a3b8;
+    p = "Você navegou para esta rota passando o parâmetro de usuário!".style {
+      color: #cbd5e1;
+      font-family: sans-serif;
     }
-    button = "Voltar ao Início".style {
-      background-color: #10b981;
+    button [onClick=SubScript.navigate('inicio')] = "Voltar para Início".style {
+      background-color: #3b82f6;
       color: white;
-      padding: 8px 16px;
+      padding: 10px 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      onClick: SubScript.navigate("inicio")
+      font-weight: bold;
     }
   }
 }
 
-popup = confirmModal {
-  div.style {
-    text-align: center;
-    font-family: sans-serif;
-  } {
-    h3 = "Confirmação" {
-      color: #ec4899;
+// 5. Definição de Popup Modal
+popup = modalExemplo {
+  div {
+    h2 = "Modal de Exemplo".style {
+      color: #f59e0b;
       margin-top: 0;
+      font-family: sans-serif;
     }
-    p = "Deseja realmente fechar esta janela?" {
-      color: #cbd5e1;
+    p = "Este é um modal flutuante criado com 'popup = modalExemplo { ... }'".style {
+      color: #e2e8f0;
+      font-family: sans-serif;
     }
-    button = "Fechar".style {
-      background-color: #64748b;
+    button [onClick=SubScript.closePopup('modalExemplo')] = "Fechar Modal".style {
+      background-color: #ef4444;
       color: white;
       padding: 8px 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      onClick: SubScript.closePopup("confirmModal")
+      font-weight: bold;
+      margin-top: 10px;
     }
   }
-}`;
-
-        const autocompleteDictionary = [
-            { label: 'page = rota(params)', type: 'rota', snippet: 'page = minhaRota(param) {\n  div {\n    h1 = "Página " + $param\n  }\n}', desc: 'Criação de Rota com Parâmetros' },
-            { label: 'popup = nomePopup', type: 'rota', snippet: 'popup = meuModal {\n  div {\n    h2 = "Título do Modal"\n  }\n}', desc: 'Criação de Popup' },
-            { label: 'onclick.place', type: 'rota', snippet: 'onclick.place: {\n  div {\n    p = "Item do Menu Flutuante"\n  }\n}', desc: 'Menu Suspenso Flutuante' },
-            { label: 'SubScript.navigate(...)', type: 'func', snippet: 'SubScript.navigate("nomeRota", "param1")', desc: 'Navegar para Rota' },
-            { label: 'SubScript.openPopup(...)', type: 'func', snippet: 'SubScript.openPopup("nomePopup")', desc: 'Abrir Popup' },
-            { label: 'SubScript.closePopup(...)', type: 'func', snippet: 'SubScript.closePopup("nomePopup")', desc: 'Fechar Popup' }
-        ];
+}
+`;
 
         let currentFileName = "meu_projeto.sub15";
-        let selectedSuggestionIndex = 0;
-        let filteredSuggestions = [];
 
         const editing = document.getElementById('editing');
         const highlightingContent = document.getElementById('highlighting-content');
         const highlighting = document.getElementById('highlighting');
-        const suggestionsBox = document.getElementById('suggestionsBox');
         const consoleOutput = document.getElementById('consoleOutput');
         const lineNumbers = document.getElementById('lineNumbers');
 
@@ -377,11 +410,11 @@ popup = confirmModal {
                 '(\\$[a-zA-Z0-9_]+)',
                 '(\\b(?:var|let|const|function|return|if|else)\\b)',
                 '(\\bpage\\b|\\bpopup\\b|onclick\\.place)',
-                '(\\b(?:head|style|h1|h2|h3|p|div|span|button|input)\\b)',
+                '(\\b(?:head|style|h1|h2|h3|h4|h5|h6|p|div|span|button|input|img|a)\\b)',
                 '(\\b\\[[^\\]]*\\])',
                 '(\\.style)',
                 '(\\b(?:SubScript\\.navigate|SubScript\\.openPopup|SubScript\\.closePopup)\\b)',
-                '(\\b(?:onClick|color|background-color|margin|padding|border|border-radius)\\b)',
+                '(\\b(?:onClick|color|background-color|margin|padding|border|border-radius|font-family|font-size|text-align)\\b)',
                 '(\\+)',
                 '(#[0-9a-fA-F]{3,8}\\b|\\b\\d+(?:px|em|%)?\\b)',
                 '([{}()=:;,])'
@@ -427,12 +460,15 @@ popup = confirmModal {
             if (type === 'pageParam') snippet = '\npage = novaPagina(parametro) {\n  div {\n    h1 = "Bem-vindo " + $parametro\n  }\n}\n';
             if (type === 'popupSnippet') snippet = '\npopup = meuModal {\n  div {\n    h2 = "Título do Popup"\n  }\n}\n';
             if (type === 'onclickPlace') snippet = 'onclick.place: {\n  div {\n    p = "Opção 1"\n  }\n}';
-            if (type === 'constSnippet') snippet = '\nconst = nometravado = "Valor Fixo"\n';
+            if (type === 'varSnippet') snippet = '\nvar user = usuario\n';
+            if (type === 'constSnippet') snippet = '\nconst nometravado = "Valor Fixo"\n';
+            if (type === 'pagesArraySnippet') snippet = '\nvar paginas = pagesarray["inicio", "perfil"]\n';
 
             const cursorPos = editing.selectionStart;
             editing.value = editing.value.substring(0, cursorPos) + snippet + editing.value.substring(cursorPos);
             updateEditor();
             editing.focus();
+            compileAndRender();
         }
 
         function handleKeyDown(e) {
@@ -446,37 +482,61 @@ popup = confirmModal {
             }
         }
 
-        // --- COMPILADOR SUBSCRIPT 2.9.2 (PAGES COM PARÂMETROS E PLACE FIX) ---
         function parseSubScriptToHTML(subscriptCode) {
             let headContent = '';
-            let styleCSS = '';
             let globalScripts = '';
             let elementCounter = 0;
 
             let pagesMap = {};
             let popupMap = {};
 
-            function convertExpression(expr) {
-                if (!expr) return '""';
-                return expr.replace(/\$([a-zA-Z0-9_]+)/g, '$1');
-            }
-
             let code = subscriptCode;
 
-            // Extrair Páginas com parâmetros: page = rota(param1, param2) { ... }
-            const pageRegex = /page\s*=\s*([a-zA-Z0-9_]+)\s*\(([^)]*)\)\s*\{([\s\S]*?)\n\}/g;
+            // 1. Extrair declarações head = { ... }
+            const headRegex = /head\s*=\s*\{([\s\S]*?)\}/g;
+            let hMatch;
+            while ((hMatch = headRegex.exec(code)) !== null) {
+                let headBody = hMatch[1];
+                let titleMatch = headBody.match(/title\s*=\s*"([^"]*)"/);
+                if (titleMatch) headContent += `<title>${titleMatch[1]}</title>\n`;
+                let metaMatch = headBody.match(/meta\s*=\s*"([^"]*)"/);
+                if (metaMatch) headContent += `<meta ${metaMatch[1]} />\n`;
+            }
+            code = code.replace(headRegex, '');
+
+            // 2. Extrair variáveis (var x = y, var = x = y, const x = y)
+            const varRegex = /(?:var|const)\s*(?:=\s*)?([a-zA-Z0-9_]+)\s*=\s*(pagesarray\s*\[[^\]]*\]|"[^"]*"|'[^']*'|[^\n]+)/g;
+            let vMatch;
+            while ((vMatch = varRegex.exec(code)) !== null) {
+                let varName = vMatch[1].trim();
+                let valExpr = vMatch[2].trim();
+                if (valExpr.startsWith('pagesarray')) {
+                    let inside = valExpr.replace(/^pagesarray\s*\[/, '').replace(/\]$/, '');
+                    globalScripts += `window.${varName} = [${inside}];\n`;
+                } else {
+                    if (!valExpr.startsWith('"') && !valExpr.startsWith("'") && isNaN(valExpr) && valExpr !== 'true' && valExpr !== 'false') {
+                        globalScripts += `window.${varName} = "${valExpr}";\n`;
+                    } else {
+                        globalScripts += `window.${varName} = ${valExpr};\n`;
+                    }
+                }
+            }
+            code = code.replace(varRegex, '');
+
+            // 3. Extrair Páginas
+            const pageRegex = /page\s*=\s*([a-zA-Z0-9_]+)(?:\(([^)]*)\))?\s*\{([\s\S]*?)\n\}/g;
             let pMatch;
             let firstPageName = null;
             while ((pMatch = pageRegex.exec(code)) !== null) {
                 let pageRoute = pMatch[1].trim();
-                let params = pMatch[2].split(',').map(s => s.trim()).filter(Boolean);
+                let params = pMatch[2] ? pMatch[2].split(',').map(s => s.trim()).filter(Boolean) : [];
                 if (!firstPageName) firstPageName = pageRoute;
                 let pageInnerBlock = pMatch[3].trim();
                 pagesMap[pageRoute] = { params: params, body: pageInnerBlock };
             }
             code = code.replace(pageRegex, '');
 
-            // Extrair Popups: popup = popup-name { ... }
+            // 4. Extrair Popups
             const popupRegex = /popup\s*=\s*([a-zA-Z0-9_\-]+)\s*\{([\s\S]*?)\n\}/g;
             let popMatch;
             while ((popMatch = popupRegex.exec(code)) !== null) {
@@ -486,7 +546,83 @@ popup = confirmModal {
             }
             code = code.replace(popupRegex, '');
 
-            // Parser de Árvore DOM
+            // Converte expressões de texto e variáveis para JS válido
+            function formatStringExpression(expr) {
+                if (!expr) return '""';
+                let formatted = expr.trim();
+                // Subsitui $variavel por consulta de janela
+                formatted = formatted.replace(/\$([a-zA-Z0-9_]+)/g, "(window.$1 !== undefined ? window.$1 : '')");
+                // Adiciona operador + entre strings/vars adjacentes caso falte o +
+                formatted = formatted.replace(/("[^"]*"|'[^']*'|\([^)]+\))\s+("[^"]*"|'[^']*'|\()/g, '$1 + $2');
+                return formatted;
+            }
+
+            // Parser de Atributos entre colchetes [ key = val ] - Suporta vírgulas e chamadas de função
+            function parseAttributes(rawAttrs) {
+                let attrPairs = [];
+                let elemId = null;
+                let onClickJS = '';
+
+                if (!rawAttrs) return { attrPairs, elemId, onClickJS };
+
+                let tokens = [];
+                let current = '';
+                let inQuotes = false;
+                let quoteChar = '';
+                let parenDepth = 0;
+
+                for (let i = 0; i < rawAttrs.length; i++) {
+                    let char = rawAttrs[i];
+                    if ((char === '"' || char === "'") && (i === 0 || rawAttrs[i-1] !== '\\')) {
+                        if (!inQuotes) {
+                            inQuotes = true;
+                            quoteChar = char;
+                        } else if (char === quoteChar) {
+                            inQuotes = false;
+                        }
+                        current += char;
+                    } else if (!inQuotes && char === '(') {
+                        parenDepth++;
+                        current += char;
+                    } else if (!inQuotes && char === ')') {
+                        if (parenDepth > 0) parenDepth--;
+                        current += char;
+                    } else if (!inQuotes && parenDepth === 0 && (char === ',' || char === ' ')) {
+                        if (current.trim()) tokens.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                if (current.trim()) tokens.push(current.trim());
+
+                tokens.forEach(token => {
+                    let eqIdx = token.indexOf('=');
+                    if (eqIdx !== -1) {
+                        let key = token.substring(0, eqIdx).trim();
+                        let val = token.substring(eqIdx + 1).trim();
+
+                        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                            val = val.substring(1, val.length - 1);
+                        }
+
+                        // Substitui referências $var dentro dos handlers de eventos e atributos
+                        val = val.replace(/\$([a-zA-Z0-9_]+)/g, "(window.$1 !== undefined ? window.$1 : '$1')");
+
+                        if (key.toLowerCase() === 'id') {
+                            elemId = val;
+                        } else if (key.toLowerCase() === 'onclick') {
+                            onClickJS = val;
+                        } else {
+                            attrPairs.push(`${key}="${val}"`);
+                        }
+                    }
+                });
+
+                return { attrPairs, elemId, onClickJS };
+            }
+
+            // Parser de Árvore DOM SubScript
             function parseSubScriptTree(inputCode) {
                 let htmlOutput = '';
                 let clean = inputCode.replace(/\/\/[^\n]*/g, '').trim();
@@ -512,22 +648,14 @@ popup = confirmModal {
                         }
 
                         elementCounter++;
-                        let elemId = `sub_${tagName}_${elementCounter}`;
+                        let defaultId = `sub_${tagName}_${elementCounter}`;
 
-                        let attrPairs = [];
-                        if (rawAttrs) {
-                            const attrRegex = /([a-zA-Z0-9_\-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s,]+))/g;
-                            let aMatch;
-                            while ((aMatch = attrRegex.exec(rawAttrs)) !== null) {
-                                const key = aMatch[1].trim();
-                                const val = (aMatch[3] !== undefined ? aMatch[3] : (aMatch[4] !== undefined ? aMatch[4] : aMatch[5])).trim();
-                                if (key.toLowerCase() === 'id') elemId = val;
-                                else attrPairs.push(`${key}="${val}"`);
-                            }
-                        }
+                        const parsedAttrs = parseAttributes(rawAttrs);
+                        let elemId = parsedAttrs.elemId || defaultId;
+                        let attrPairs = parsedAttrs.attrPairs;
+                        let onClickJS = parsedAttrs.onClickJS;
 
                         let cssStyles = [];
-                        let onClickJS = '';
                         let onClickPlaceHTML = '';
                         let innerBodyContent = '';
 
@@ -579,7 +707,7 @@ popup = confirmModal {
                                     if (parts.length >= 2) {
                                         const key = parts[0].trim();
                                         const val = parts.slice(1).join(':').trim().replace(/;$/, '');
-                                        if (key === 'onClick') onClickJS = convertExpression(val);
+                                        if (key === 'onClick') onClickJS = val;
                                         else cssStyles.push(`${key}: ${val};`);
                                     }
                                 });
@@ -599,11 +727,17 @@ popup = confirmModal {
                         }
 
                         let onClickAttr = onClickJS ? ` onclick="${onClickJS.replace(/"/g, '&quot;')}"` : '';
-                        let textVal = contentExpr ? convertExpression(contentExpr) : '';
+                        
+                        let evaluatedContent = '';
+                        if (contentExpr) {
+                            let jsExpr = formatStringExpression(contentExpr);
+                            let encodedExpr = encodeURIComponent(jsExpr);
+                            evaluatedContent = `<span class="subscript-eval" data-expr="${encodedExpr}"></span>`;
+                        }
 
                         if (tagName === 'img') htmlOutput += `<img${attrString}${styleAttr}${onClickAttr} />\n`;
                         else if (tagName === 'input') htmlOutput += `<input${attrString}${styleAttr}${onClickAttr} />\n`;
-                        else htmlOutput += `<${tagName}${attrString}${styleAttr}${onClickAttr}>${textVal ? textVal : innerBodyContent}</${tagName}>\n`;
+                        else htmlOutput += `<${tagName}${attrString}${styleAttr}${onClickAttr}>${evaluatedContent ? evaluatedContent : innerBodyContent}</${tagName}>\n`;
                     } else {
                         i++;
                     }
@@ -614,6 +748,13 @@ popup = confirmModal {
 
             let bodyHTML = '';
 
+            // Renderizar código de nível raiz (elementos fora de page = ...)
+            let rootElementsHTML = parseSubScriptTree(code);
+            if (rootElementsHTML.trim()) {
+                bodyHTML += `<div id="subscript-root-container">\n${rootElementsHTML}\n</div>\n`;
+            }
+
+            // Renderizar páginas de rotas
             if (Object.keys(pagesMap).length > 0) {
                 bodyHTML += `<div id="subscript-app-router">\n`;
                 Object.keys(pagesMap).forEach(route => {
@@ -624,6 +765,7 @@ popup = confirmModal {
                 bodyHTML += `</div>\n`;
             }
 
+            // Renderizar Popups
             if (Object.keys(popupMap).length > 0) {
                 bodyHTML += `<div id="subscript-popups-container">\n`;
                 Object.keys(popupMap).forEach(popName => {
@@ -646,8 +788,21 @@ popup = confirmModal {
     <meta charset="UTF-8">
     ${headContent}
     <script>
+        ${globalScripts}
         window.SubScript = {
             currentPage: null,
+            updateEvaluatedElements: function(container) {
+                var elems = (container || document).querySelectorAll('.subscript-eval');
+                elems.forEach(function(el) {
+                    var expr = decodeURIComponent(el.getAttribute('data-expr'));
+                    try {
+                        var res = eval(expr);
+                        el.innerText = (res !== undefined && res !== null) ? res : '';
+                    } catch(e) {
+                        console.error('[SubScript Eval Error]', e);
+                    }
+                });
+            },
             navigate: function(pageRoute) {
                 var args = Array.prototype.slice.call(arguments, 1);
                 var pages = document.querySelectorAll('.subscript-page');
@@ -665,28 +820,22 @@ popup = confirmModal {
                         }
                     });
 
-                    console.log("[SubScript 2.9] Navegou para a página: " + pageRoute + (args.length ? " com parâmetros: " + args.join(', ') : ''));
+                    this.updateEvaluatedElements(target);
+                    this.updateEvaluatedElements(document.getElementById('subscript-root-container'));
+
+                    console.log("[SubScript 2.9] Navegou para a página: " + pageRoute + (args.length ? " com parâmetro: " + args.join(', ') : ""));
                 }
             },
             openPopup: function(popupName) {
                 var pop = document.getElementById('subscript-popup-' + popupName);
-                if (pop) {
-                    pop.style.display = 'flex';
-                    console.log("[SubScript 2.9] Popup aberto: " + popupName);
-                }
+                if (pop) { pop.style.display = 'flex'; console.log("[SubScript 2.9] Popup aberto: " + popupName); }
             },
             closePopup: function(popupName) {
                 var pop = document.getElementById('subscript-popup-' + popupName);
-                if (pop) {
-                    pop.style.display = 'none';
-                    console.log("[SubScript 2.9] Popup fechado: " + popupName);
-                }
+                if (pop) { pop.style.display = 'none'; console.log("[SubScript 2.9] Popup fechado: " + popupName); }
             },
             togglePlaceMenu: function(event, encodedHTML) {
-                if (event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-                }
+                if (event) { event.preventDefault(); event.stopPropagation(); }
                 var menu = document.getElementById('subscript-place-menu');
                 if (!menu) return;
 
@@ -707,7 +856,7 @@ popup = confirmModal {
         });
     <\/script>
 </head>
-<body style="margin: 0; background-color: #0f172a;">
+<body style="margin: 0; background-color: #0f172a; color: white;">
 ${bodyHTML}
 
 <script>
@@ -716,6 +865,7 @@ ${bodyHTML}
     };
 
     document.addEventListener("DOMContentLoaded", function() {
+        SubScript.updateEvaluatedElements();
         ${firstPageName ? `SubScript.navigate('${firstPageName}');` : ''}
     });
 <\/script>
@@ -750,11 +900,9 @@ ${bodyHTML}
         }
 
         function clearEditor() {
-            if (confirm("Deseja realmente limpar todo o código?")) {
-                editing.value = "";
-                updateEditor();
-                compileAndRender();
-            }
+            editing.value = "";
+            updateEditor();
+            compileAndRender();
         }
 
         function saveFile() { downloadFile(currentFileName, editing.value); }
